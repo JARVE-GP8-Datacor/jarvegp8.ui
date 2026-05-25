@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const UPSTREAM = "https://eldercare-reflex-companion.ngrok-free.dev/api/po/";
+const UPSTREAM = "https://eldercare-reflex-companion.ngrok-free.dev/api/po";
 
 export async function GET() {
   const res = await fetch(UPSTREAM, {
