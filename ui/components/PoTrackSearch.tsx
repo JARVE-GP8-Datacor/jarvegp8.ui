@@ -5,8 +5,6 @@ import { useState, type FormEvent } from "react";
 import { AlertCircleIcon, HashIcon, SearchIcon, XIcon } from "./Icon";
 import { PO_RECORDS } from "@/lib/po-data";
 
-const PO_ID_RE = /^PO-\d{4}-\d{4,6}$/i;
-
 export function PoTrackSearch() {
   const router = useRouter();
   const [value, setValue] = useState("");
@@ -19,8 +17,8 @@ export function PoTrackSearch() {
       setError("Enter a tracking ID to search.");
       return;
     }
-    if (!PO_ID_RE.test(id)) {
-      setError("That doesn't look like a tracking ID. Try the format PO-YYYY-NNNNN.");
+    if (id.length !== 10) {
+      setError("Tracking IDs are exactly 10 characters. Check and try again.");
       return;
     }
     if (!PO_RECORDS[id]) {
@@ -44,7 +42,7 @@ export function PoTrackSearch() {
         <div className="track-card__title">Look up a PO by tracking ID</div>
         <div className="track-card__hint">
           Enter the tracking ID from your confirmation email — e.g.{" "}
-          <code>PO-2026-08372</code>
+          <code>PO-2026-01</code>
         </div>
       </div>
 
@@ -63,7 +61,7 @@ export function PoTrackSearch() {
               setValue(e.target.value);
               if (error) setError("");
             }}
-            placeholder="PO-2026-XXXXX"
+            placeholder="PO-YYYY-NN"
             aria-label="Tracking ID"
             aria-invalid={error ? "true" : "false"}
             spellCheck={false}

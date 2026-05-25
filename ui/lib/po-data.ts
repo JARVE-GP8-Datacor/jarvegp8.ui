@@ -1,8 +1,8 @@
 import type { PoSummary } from "./po-types";
 
 export const PO_RECORDS: Record<string, PoSummary> = {
-  "PO-2026-08372": {
-    id: "PO-2026-08372",
+  "PO-2026-01": {
+    id: "PO-2026-01",
     vendor: "Vertex Specialty Chemicals",
     amount: "$48,720.00",
     createdBy: "Sarah Chen",
@@ -30,4 +30,4 @@ export const PO_RECORDS: Record<string, PoSummary> = {
   },
 };
 
-export const DEFAULT_PO_ID = "PO-2026-08372";
+export const DEFAULT_PO_ID = "PO-2026-01";
