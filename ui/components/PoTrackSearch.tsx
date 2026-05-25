@@ -41,8 +41,8 @@ export function PoTrackSearch() {
         <div className="track-card__kicker">Track an order</div>
         <div className="track-card__title">Look up a PO by tracking ID</div>
         <div className="track-card__hint">
-          Enter the tracking ID from your confirmation email — e.g.{" "}
-          <code>PO-2026-01</code>
+          Enter your 10-character tracking ID — e.g.{" "}
+          <code>XXXXXXXXXX</code>
         </div>
       </div>
 
