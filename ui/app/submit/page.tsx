@@ -24,14 +24,16 @@ const PO_API_BASE = "/api/po/";
 const NGROK_HEADERS = {};
 
 function mapApiSubmission(r: Record<string, unknown>): Submission {
-  const name = String(r.filename ?? r.file_name ?? r.name ?? "document.pdf");
-  const rawStatus = String(r.status ?? "completed").toLowerCase().replace("_", "-");
+  const name = String(r.original_filename ?? r.filename ?? r.file_name ?? r.name ?? "document.pdf");
+  const rawStatus = String(r.status ?? "").toUpperCase();
   const status: SubmissionStatus =
-    rawStatus === "in-progress" ? "in-progress"
-    : rawStatus === "failed" ? "failed"
-    : "completed";
+    rawStatus === "INTERPRETING" || rawStatus === "UPLOADING" || rawStatus === "PROCESSING"
+      ? "in-progress"
+      : rawStatus === "FAILED" || rawStatus === "ERROR"
+      ? "failed"
+      : "completed"; // PENDING_REVIEW and anything else = processed/completed
   return {
-    id: String(r.id ?? r.submission_id ?? uid()),
+    id: String(r.tracking_code ?? r._id ?? r.id ?? r.submission_id ?? uid()),
     name,
     size: Number(r.size ?? r.file_size ?? 0),
     ext: getExt(name) || "pdf",
