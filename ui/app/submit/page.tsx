@@ -97,7 +97,7 @@ export default function SubmitPage() {
   }, []);
 
   useEffect(() => {
-    if (productId !== "pennentmill") return;
+    if (!productId) return;
     const t = window.setInterval(() => fetchQueue(), 5000);
     return () => window.clearInterval(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
