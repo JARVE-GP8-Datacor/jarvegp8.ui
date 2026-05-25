@@ -1854,6 +1854,44 @@ button {
   transform: translate(-50%, -4px);
 }
 
+/* ── Submit: replace-file confirmation modal ────────────────── */
+.replace-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 46, 79, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 900;
+  padding: 1rem;
+}
+.replace-modal {
+  background: var(--portal-card);
+  border: 1px solid var(--portal-border);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-lg);
+  padding: 1.75rem 2rem;
+  max-width: 28rem;
+  width: 100%;
+}
+.replace-modal__title {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--portal-text);
+  margin: 0 0 0.625rem;
+}
+.replace-modal__body {
+  font-size: 0.875rem;
+  color: var(--portal-text-muted);
+  margin: 0 0 1.5rem;
+  line-height: 1.55;
+}
+.replace-modal__actions {
+  display: flex;
+  gap: 0.625rem;
+  justify-content: flex-end;
+}
+
 /* ── Submit: selected-product context banner ─────────────────── */
 .submit-product {
   display: flex;

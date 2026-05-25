@@ -26,6 +26,7 @@ export default function SubmitPage() {
   const [pinnedOnly, setPinnedOnly] = useState(false);
 
   const [staged, setStaged] = useState<StagedFile[]>([]);
+  const [pendingFile, setPendingFile] = useState<StagedFile | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [freshIds, setFreshIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState("");
@@ -46,31 +47,42 @@ export default function SubmitPage() {
     toastTimerRef.current = setTimeout(() => setToast(""), 2200);
   }, []);
 
+  const buildEntry = (f: File): StagedFile => {
+    const ext = getExt(f.name);
+    const supportedType = isAccepted(ext);
+    const withinSize = f.size <= MAX_BYTES;
+    const valid = supportedType && withinSize;
+    return {
+      id: uid(),
+      name: f.name,
+      size: f.size,
+      ext: ext || "unknown",
+      valid,
+      reason: !supportedType
+        ? `Unsupported type · ${ext ? "." + ext : "no extension"}`
+        : !withinSize
+        ? "Exceeds 25 MB limit"
+        : "",
+    };
+  };
+
+  const commitEntry = useCallback((entry: StagedFile) => {
+    setStaged([entry]);
+    if (!entry.valid) showToast("File rejected · unsupported type or too large");
+  }, [showToast]);
+
   const addFiles = useCallback(
     (files: FileList) => {
       const f = files[0];
       if (!f) return;
-      const ext = getExt(f.name);
-      const supportedType = isAccepted(ext);
-      const withinSize = f.size <= MAX_BYTES;
-      const valid = supportedType && withinSize;
-      setStaged([
-        {
-          id: uid(),
-          name: f.name,
-          size: f.size,
-          ext: ext || "unknown",
-          valid,
-          reason: !supportedType
-            ? `Unsupported type · ${ext ? "." + ext : "no extension"}`
-            : !withinSize
-            ? "Exceeds 25 MB limit"
-            : "",
-        },
-      ]);
-      if (!valid) showToast("File rejected · unsupported type or too large");
+      const entry = buildEntry(f);
+      if (staged.length > 0) {
+        setPendingFile(entry);
+      } else {
+        commitEntry(entry);
+      }
     },
-    [showToast]
+    [staged.length, commitEntry]
   );
 
   const removeStaged = useCallback((id: string) => {
@@ -200,6 +212,35 @@ export default function SubmitPage() {
       <div className={`toast ${toast ? "is-visible" : ""}`} role="status" aria-live="polite">
         {toast}
       </div>
+
+      {pendingFile && (
+        <div className="replace-overlay" role="dialog" aria-modal="true" aria-labelledby="replace-title">
+          <div className="replace-modal">
+            <p className="replace-modal__title" id="replace-title">Replace current file?</p>
+            <p className="replace-modal__body">
+              <strong>{staged[0]?.name}</strong> will be replaced with{" "}
+              <strong>{pendingFile.name}</strong>.
+            </p>
+            <div className="replace-modal__actions">
+              <button
+                className="btn-ghost"
+                onClick={() => setPendingFile(null)}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-primary"
+                onClick={() => {
+                  commitEntry(pendingFile);
+                  setPendingFile(null);
+                }}
+              >
+                Replace
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
