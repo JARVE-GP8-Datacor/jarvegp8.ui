@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { PaperclipIcon, CheckIcon } from "@/components/Icon";
 import { FormField, TextareaField } from "@/components/po-form/FormField";
@@ -8,18 +8,99 @@ import { LineItemsTable } from "@/components/po-form/LineItemsTable";
 import { AppliedChargesTable } from "@/components/po-form/AppliedChargesTable";
 import { UdfsTable } from "@/components/po-form/UdfsTable";
 import { PoFormHeader } from "@/components/po-form/PoFormHeader";
-import { mockPoFromSubmissionId, type PoFormData, type PoLineItem } from "@/lib/po-form-data";
+import {
+  mockPoFromSubmissionId,
+  formatCurrency,
+  type PoFormData,
+  type PoLineItem,
+} from "@/lib/po-form-data";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapApiToForm(r: Record<string, any>): PoFormData {
+  const payload = r.normalized_payload ?? {};
+  const header = payload.header ?? {};
+  const parties = payload.parties ?? {};
+  const seller = parties.seller ?? {};
+  const buyer = parties.buyer ?? {};
+  const specific = payload.project_specific ?? {};
+  const lines: Record<string, unknown>[] = payload.line_items ?? [];
+
+  const buyerParts = String(buyer.name ?? "").split(" ");
+  const totalAmount = lines.reduce((s: number, l: Record<string, unknown>) => s + Number(l.total ?? 0), 0);
+
+  return {
+    purchaseOrderNumber: String(header.po_number ?? r.tracking_code ?? ""),
+    orderDate: String(header.issue_date ?? r.created_at?.slice(0, 10) ?? ""),
+    organizationUnit: String(specific.warehouse ?? r.project_code ?? ""),
+    status: String(r.status ?? "Open"),
+    poType: "Standard",
+    source: String(r.project_code ?? ""),
+    sourceReference: String(r.tracking_code ?? ""),
+    currency: String(header.currency ?? "USD"),
+    exchangeRateType: "Spot",
+
+    supplierCode: String(specific.supplier_code ?? ""),
+    supplierName: String(seller.name ?? ""),
+    supplierLegalName: String(seller.name ?? ""),
+
+    buyerFirstName: buyerParts[0] ?? "",
+    buyerLastName: buyerParts.slice(1).join(" "),
+
+    shippingMethod: String(specific.shipping_method ?? ""),
+    paymentTerms: String(header.payment_terms ?? specific.pmm_payment_terms ?? ""),
+    payBy: "",
+    commercialTerms: String(specific.commercial_terms ?? ""),
+
+    lineItems: lines.map((l, idx) => ({
+      sequenceNumber: Number(l.line_number ?? idx + 1),
+      itemNumber: String(l.sku ?? `ITEM-${String(idx + 1).padStart(3, "0")}`),
+      itemDescription: String(l.description ?? ""),
+      orderQuantity: Number(l.quantity ?? 0),
+      orderUOM: String(l.unit ?? ""),
+      unitPrice: Number(l.unit_price ?? 0),
+      extendedPrice: Number(l.total ?? 0),
+      warehouse: String(specific.warehouse ?? ""),
+      requiredDate: String(header.delivery_date ?? ""),
+    })),
+
+    appliedCharges: [],
+    userDefinedFields: [],
+
+    comments: (payload.interpretation_notes as string[] | undefined)?.join("\n") ?? "",
+
+    createdBy: String(r.tenant_id ?? ""),
+    createdDate: String(r.created_at ?? ""),
+    lastUpdatedBy: String(r.tenant_id ?? ""),
+    lastUpdatedDate: String(r.updated_at ?? r.created_at ?? ""),
+
+    totalAmount: formatCurrency(totalAmount),
+    vendorDisplay: String(seller.name ?? ""),
+  };
+}
 
 function PoFormView() {
   const params = useSearchParams();
   const id = params.get("id");
   const file = params.get("file");
 
-  const initial = useMemo(() => mockPoFromSubmissionId(id), [id]);
-  const [form, setForm] = useState<PoFormData>(initial);
+  const [form, setForm] = useState<PoFormData>(() => mockPoFromSubmissionId(id));
+  const [loading, setLoading] = useState(!!id);
   const [resolution, setResolution] = useState<"approved" | "discarded" | null>(null);
 
-  useEffect(() => { setForm(initial); }, [initial]);
+  useEffect(() => {
+    if (!id) return;
+    fetch(`/api/po/${encodeURIComponent(id)}`)
+      .then((res) => res.json())
+      .then((data: unknown) => {
+        const r = (data as Record<string, unknown>).data ?? data;
+        if (r && typeof r === "object") {
+          setForm(mapApiToForm(r as Record<string, unknown>));
+        }
+      })
+      .catch(() => { /* keep mock data */ })
+      .finally(() => setLoading(false));
+  }, [id]);
+
   useEffect(() => {
     document.title = `${form.purchaseOrderNumber} · PO Form · JARVE GP8 Portal`;
   }, [form.purchaseOrderNumber]);
@@ -50,6 +131,17 @@ function PoFormView() {
     });
   };
 
+  if (loading) {
+    return (
+      <>
+        <PoFormHeader onClose={() => window.close()} onPrint={() => window.print()} />
+        <div style={{ padding: "60px 40px", color: "var(--portal-text-muted)", fontSize: 14 }}>
+          Loading PO details…
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <PoFormHeader onClose={() => window.close()} onPrint={() => window.print()} />
@@ -58,9 +150,9 @@ function PoFormView() {
         <header className="form-head">
           <div className="form-head__source">
             <PaperclipIcon size={13} strokeWidth={1.75} />
-            Generated from submission <code>{id ?? "SUB-2026-00001"}</code>
+            Generated from submission <code>{id ?? "—"}</code>
             <span style={{ color: "var(--portal-text-faint)" }}>·</span>
-            <span>{file ?? "document.pdf"}</span>
+            <span>{file ?? form.purchaseOrderNumber}</span>
           </div>
           <div className="form-head__title-row">
             <h1 className="form-head__num">{form.purchaseOrderNumber}</h1>
