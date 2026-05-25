@@ -67,7 +67,7 @@ export default function SubmitPage() {
     setProductId(new URLSearchParams(window.location.search).get("product"));
   }, []);
 
-  useEffect(() => {
+  const fetchQueue = (opts: { initial?: boolean } = {}) =>
     fetch(PO_API_BASE, { headers: NGROK_HEADERS })
       .then((res) => res.json())
       .then((data: unknown) => {
@@ -78,11 +78,30 @@ export default function SubmitPage() {
           : Array.isArray((data as Record<string, unknown>).submissions)
           ? (data as Record<string, unknown>).submissions as unknown[]
           : [];
-        setSubmissions(list.map((item) => mapApiSubmission(item as Record<string, unknown>)));
+        const fetched = list.map((item) => mapApiSubmission(item as Record<string, unknown>));
+        setSubmissions((prev) => {
+          if (opts.initial) return fetched;
+          // merge: update existing rows + prepend genuinely new ones
+          const fetchedMap = new Map(fetched.map((s) => [s.id, s]));
+          const updated = prev.map((s) => fetchedMap.get(s.id) ?? s);
+          const existingIds = new Set(prev.map((s) => s.id));
+          const newRows = fetched.filter((s) => !existingIds.has(s.id));
+          return [...newRows, ...updated];
+        });
       })
-      .catch(() => { /* API unreachable — start with empty queue */ })
-      .finally(() => setQueueLoading(false));
+      .catch(() => { /* silent — keep current state */ });
+
+  useEffect(() => {
+    fetchQueue({ initial: true }).finally(() => setQueueLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (productId !== "pennentmill") return;
+    const t = window.setInterval(() => fetchQueue(), 5000);
+    return () => window.clearInterval(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productId]);
 
   useEffect(() => {
     return () => {
