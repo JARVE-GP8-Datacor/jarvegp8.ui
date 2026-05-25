@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { useRouter } from "next/navigation";
 import { CATEGORIES, LOGOS } from "@/lib/data";
 import type { Product } from "@/lib/types";
 import { ArrowIcon, PinIcon } from "./Icon";
@@ -11,12 +12,13 @@ interface ProductTileProps {
   onTogglePin: (id: string) => void;
 }
 
-export function ProductTile({ product, onLaunch, onTogglePin }: ProductTileProps) {
+export function ProductTile({ product, onTogglePin }: ProductTileProps) {
+  const router = useRouter();
   const logo = LOGOS[product.logo];
   const cat = CATEGORIES.find((c) => c.id === product.category);
 
   return (
-    <article className="tile tile--color tile--chevron" onClick={() => onLaunch(product)}>
+    <article className="tile tile--color tile--chevron" onClick={() => router.push("/submit")}>
       <svg className="tile__chev" viewBox="0 0 120 120" aria-hidden="true">
         <polygon points="60,0 120,0 90,30 30,60 90,90 120,120 60,120 0,60" fill="currentColor" />
       </svg>

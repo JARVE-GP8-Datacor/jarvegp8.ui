@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { useRouter } from "next/navigation";
 import { CATEGORIES, LOGOS } from "@/lib/data";
 import type { Product } from "@/lib/types";
 import { ArrowIcon, PinIcon } from "./Icon";
@@ -11,12 +12,13 @@ interface ProductRowProps {
   onTogglePin: (id: string) => void;
 }
 
-export function ProductRow({ product, onLaunch, onTogglePin }: ProductRowProps) {
+export function ProductRow({ product, onTogglePin }: ProductRowProps) {
+  const router = useRouter();
   const logo = LOGOS[product.logo];
   const cat = CATEGORIES.find((c) => c.id === product.category);
 
   return (
-    <article className="row" onClick={() => onLaunch(product)}>
+    <article className="row" onClick={() => router.push("/submit")}>
       <div className="row__logo">
         <img src={logo.src} alt={logo.alt} />
       </div>

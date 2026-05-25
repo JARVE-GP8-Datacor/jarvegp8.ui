@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Header } from "@/components/Header";
 import { LaunchToast } from "@/components/LaunchToast";
+import { PoTrackSearch } from "@/components/PoTrackSearch";
 import { ProductGrid } from "@/components/ProductGrid";
 import { PRODUCTS } from "@/lib/data";
 import type { CategoryId, Product, ViewMode } from "@/lib/types";
@@ -55,6 +56,7 @@ export default function PortalPage() {
         setPinnedOnly={setPinnedOnly}
       />
       <div className="portal__body">
+        <PoTrackSearch />
         <ProductGrid
           products={filtered}
           view={view}

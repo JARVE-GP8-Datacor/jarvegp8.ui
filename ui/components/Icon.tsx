@@ -127,3 +127,17 @@ export const CalendarBlankIcon = ({ size = 22, ...rest }: IconProps) => (
     <path d="M16 4v4" />
   </svg>
 );
+
+export const HashIcon = ({ size = 16, ...rest }: IconProps) => (
+  <svg {...base(size)} strokeWidth={1.75} {...rest}>
+    <path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18" />
+  </svg>
+);
+
+export const AlertCircleIcon = ({ size = 14, ...rest }: IconProps) => (
+  <svg {...base(size)} {...rest}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 8v5" />
+    <circle cx="12" cy="16" r="0.5" fill="currentColor" />
+  </svg>
+);
