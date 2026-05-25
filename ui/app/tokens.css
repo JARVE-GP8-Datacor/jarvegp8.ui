@@ -1,0 +1,48 @@
+/* ============================================================
+   JARVE GP8 brand tokens (--ds-*)
+   Subset of the full design-system tokens, scoped to what the
+   portal actually uses.
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;700;900&display=swap");
+
+:root {
+  /* Primary */
+  --ds-datacor-white: #f3fcff;
+  --ds-datacor-blue: #122e4f;
+  --ds-safety-yellow: #ffc517;
+  --ds-electric-blue: #7afafc;
+
+  /* Secondary */
+  --ds-medium-blue: #248de3;
+  --ds-light-blue: #58cdf7;
+  --ds-dark-green: #006971;
+  --ds-light-green: #5bb0a2;
+
+  /* Neutrals */
+  --ds-datacor-black: #020407;
+  --ds-gray-8: #2d2d30;
+  --ds-gray-7: #38383d;
+  --ds-gray-6: #525256;
+  --ds-gray-5: #6d6d71;
+  --ds-gray-4: #89898b;
+  --ds-gray-3: #a4a4a6;
+  --ds-gray-2: #bfbfc0;
+  --ds-gray-1: #dadadb;
+  --ds-pure-white: #ffffff;
+
+  /* UI status */
+  --ds-ui-orange: #fa8500;
+  --ds-ui-green: #58be4d;
+  --ds-ui-red: #c72b3f;
+
+  /* Type */
+  --ds-font-display: "Mulish", "Segoe UI", system-ui, sans-serif;
+  --ds-font-body: "Mulish", "Segoe UI", system-ui, sans-serif;
+  --cc-font-mono: ui-monospace, "SFMono-Regular", "Menlo", "Consolas", "Liberation Mono", monospace;
+
+  --ds-fw-regular: 400;
+  --ds-fw-medium: 500;
+  --ds-fw-bold: 700;
+  --ds-fw-black: 900;
+}
