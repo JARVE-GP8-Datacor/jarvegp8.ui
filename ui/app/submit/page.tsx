@@ -58,6 +58,7 @@ export default function SubmitPage() {
       size: f.size,
       ext: ext || "unknown",
       valid,
+      fileRef: f,
       reason: !supportedType
         ? `Unsupported type · ${ext ? "." + ext : "no extension"}`
         : !withinSize
@@ -92,38 +93,50 @@ export default function SubmitPage() {
   const clearStaged = useCallback(() => setStaged([]), []);
 
   const submit = useCallback(() => {
-    const valid = staged.filter((s) => s.valid);
-    if (valid.length === 0) return;
+    const f = staged.find((s) => s.valid);
+    if (!f) return;
 
-    const newSubmissions: Submission[] = valid.map((f) => {
-      const id = formatSubmissionId(seqRef.current);
-      seqRef.current += 1;
-      return {
-        id,
-        name: f.name,
-        size: f.size,
-        ext: f.ext,
-        status: "in-progress",
-        submittedAt: Date.now(),
-      };
-    });
+    const subId = formatSubmissionId(seqRef.current);
+    seqRef.current += 1;
 
-    setSubmissions((prev) => [...newSubmissions.reverse(), ...prev]);
-    const newIds = new Set(newSubmissions.map((s) => s.id));
-    setFreshIds(newIds);
+    const newSubmission: Submission = {
+      id: subId,
+      name: f.name,
+      size: f.size,
+      ext: f.ext,
+      status: "in-progress",
+      submittedAt: Date.now(),
+    };
+
+    setSubmissions((prev) => [newSubmission, ...prev]);
+    setFreshIds(new Set([subId]));
     const clearHighlight = setTimeout(() => setFreshIds(new Set()), 500);
     completionTimersRef.current.push(clearHighlight);
+    setStaged([]);
+    showToast("File submitted — uploading…");
 
-    newSubmissions.forEach((row) => {
-      const delay = 2500 + Math.random() * 2500;
-      const t = setTimeout(() => {
-        setSubmissions((prev) => prev.map((s) => (s.id === row.id ? { ...s, status: "completed" } : s)));
-      }, delay);
-      completionTimersRef.current.push(t);
-    });
+    const body = new FormData();
+    body.append("file", f.fileRef ?? new Blob([f.name], { type: "text/plain" }), f.name);
 
-    setStaged((prev) => prev.filter((s) => !s.valid));
-    showToast(`${valid.length} file${valid.length === 1 ? "" : "s"} submitted`);
+    fetch("https://eldercare-reflex-companion.ngrok-free.dev/api/po/upload", {
+      method: "POST",
+      headers: { "ngrok-skip-browser-warning": "true" },
+      body,
+    })
+      .then((res) => {
+        const status: Submission["status"] = res.ok ? "completed" : "failed";
+        setSubmissions((prev) =>
+          prev.map((s) => (s.id === subId ? { ...s, status } : s))
+        );
+        if (res.ok) showToast("Upload complete");
+        else showToast(`Upload failed · server returned ${res.status}`);
+      })
+      .catch(() => {
+        setSubmissions((prev) =>
+          prev.map((s) => (s.id === subId ? { ...s, status: "failed" } : s))
+        );
+        showToast("Upload failed · network error");
+      });
   }, [staged, showToast]);
 
   const validCount = staged.filter((s) => s.valid).length;

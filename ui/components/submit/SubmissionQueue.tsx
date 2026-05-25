@@ -66,6 +66,7 @@ export function SubmissionQueue({ submissions, freshIds }: SubmissionQueueProps)
             {submissions.map((row) => {
               const iconKind = isAccepted(row.ext) ? row.ext : "unknown";
               const isDone = row.status === "completed";
+              const isFailed = row.status === "failed";
               return (
                 <tr key={row.id} className={freshIds.has(row.id) ? "is-new" : ""}>
                   <td>
@@ -87,9 +88,9 @@ export function SubmissionQueue({ submissions, freshIds }: SubmissionQueueProps)
                     </div>
                   </td>
                   <td className="col-status">
-                    <span className={`qstatus ${isDone ? "qstatus--completed" : "qstatus--inprogress"}`}>
+                    <span className={`qstatus ${isDone ? "qstatus--completed" : isFailed ? "qstatus--failed" : "qstatus--inprogress"}`}>
                       <span className="qstatus__dot" />
-                      {isDone ? "Completed" : "In progress"}
+                      {isDone ? "Completed" : isFailed ? "Failed" : "In progress"}
                     </span>
                   </td>
                   <td className="col-action">

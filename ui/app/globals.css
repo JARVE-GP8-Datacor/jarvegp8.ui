@@ -1753,6 +1753,7 @@ button {
 }
 .qstatus--inprogress { background: #fff7de; color: #8a6a00; }
 .qstatus--completed  { background: #e1f4de; color: #2c7a1f; }
+.qstatus--failed     { background: #fde8e8; color: #9b1c1c; }
 .qstatus__dot {
   width: 8px;
   height: 8px;
@@ -1766,6 +1767,11 @@ button {
 }
 .qstatus--completed .qstatus__dot {
   background: var(--ds-ui-green);
+}
+.qstatus--failed .qstatus__dot {
+  background: #ef4444;
+  box-shadow: none;
+  animation: none;
 }
 .qstatus--completed .qstatus__dot::after {
   content: "";

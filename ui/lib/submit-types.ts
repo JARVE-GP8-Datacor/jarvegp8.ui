@@ -21,9 +21,10 @@ export interface StagedFile {
   ext: string;
   valid: boolean;
   reason: string;
+  fileRef?: File;
 }
 
-export type SubmissionStatus = "in-progress" | "completed";
+export type SubmissionStatus = "in-progress" | "completed" | "failed";
 
 export interface Submission {
   id: string;
