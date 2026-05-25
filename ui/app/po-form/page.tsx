@@ -17,6 +17,7 @@ function PoFormView() {
 
   const initial = useMemo(() => mockPoFromSubmissionId(id), [id]);
   const [form, setForm] = useState<PoFormData>(initial);
+  const [resolution, setResolution] = useState<"approved" | "discarded" | null>(null);
 
   useEffect(() => { setForm(initial); }, [initial]);
   useEffect(() => {
@@ -25,6 +26,17 @@ function PoFormView() {
 
   const update = <K extends keyof PoFormData>(key: K, value: PoFormData[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
+
+  const handleSubmit = () => {
+    setResolution("approved");
+    update("status", "Approved");
+  };
+
+  const handleDiscard = () => {
+    setResolution("discarded");
+    update("status", "Discarded");
+    setTimeout(() => window.close(), 900);
+  };
 
   const updateLine = (index: number, patch: Partial<PoLineItem>) => {
     setForm((prev) => {
@@ -52,7 +64,7 @@ function PoFormView() {
           </div>
           <div className="form-head__title-row">
             <h1 className="form-head__num">{form.purchaseOrderNumber}</h1>
-            <span className="status-pill">
+            <span className={`status-pill${resolution === "discarded" ? " status-pill--discarded" : ""}`}>
               <span className="status-pill__dot" />
               {form.status}
             </span>
@@ -163,23 +175,42 @@ function PoFormView() {
 
         <div className="form-footer">
           <div className="form-footer__msg">
-            <strong>Ready for review.</strong> Save your edits, or submit to push this PO to{" "}
-            <code style={{ fontFamily: "var(--cc-font-mono)", fontSize: 12, color: "var(--ds-gray-7)" }}>
-              POST /api/PurchaseOrder
-            </code>
-            .
+            {resolution === "approved" && (
+              <><strong style={{ color: "#2c7a1f" }}>PO approved.</strong> The purchase order has been submitted successfully.</>
+            )}
+            {resolution === "discarded" && (
+              <><strong style={{ color: "#9b1c1c" }}>Discarded.</strong> Closing this window…</>
+            )}
+            {!resolution && (
+              <>
+                <strong>Ready for review.</strong> Save your edits, or submit to push this PO to{" "}
+                <code style={{ fontFamily: "var(--cc-font-mono)", fontSize: 12, color: "var(--ds-gray-7)" }}>
+                  POST /api/PurchaseOrder
+                </code>
+                .
+              </>
+            )}
           </div>
           <div className="form-footer__actions">
-            <button className="btn-ghost" type="button" onClick={() => window.close()}>
-              Discard &amp; close
-            </button>
-            <button className="btn-ghost" type="button">
-              Save draft
-            </button>
-            <button className="btn-primary" type="button">
-              <CheckIcon />
-              Submit PO
-            </button>
+            {!resolution && (
+              <>
+                <button className="btn-ghost" type="button" onClick={handleDiscard}>
+                  Discard &amp; close
+                </button>
+                <button className="btn-ghost" type="button">
+                  Save draft
+                </button>
+                <button className="btn-primary" type="button" onClick={handleSubmit}>
+                  <CheckIcon />
+                  Submit PO
+                </button>
+              </>
+            )}
+            {resolution === "approved" && (
+              <button className="btn-ghost" type="button" onClick={() => window.close()}>
+                Close
+              </button>
+            )}
           </div>
         </div>
       </main>

@@ -2094,6 +2094,15 @@ button {
   box-shadow: none;
   animation: none;
 }
+.form-head .status-pill--discarded {
+  background: #fde8e8;
+  color: #9b1c1c;
+}
+.form-head .status-pill--discarded .status-pill__dot {
+  background: #ef4444;
+  box-shadow: none;
+  animation: none;
+}
 .form-head__meta {
   font-size: 12.5px;
   color: var(--portal-text-muted);
