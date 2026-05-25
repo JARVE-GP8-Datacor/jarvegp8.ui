@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Header } from "@/components/Header";
 import { PaperclipIcon, SendIcon } from "@/components/Icon";
 import { Dropzone } from "@/components/submit/Dropzone";
+import { ProductContext } from "@/components/submit/ProductContext";
 import { StagedList } from "@/components/submit/StagedList";
 import { SubmissionQueue } from "@/components/submit/SubmissionQueue";
 import {
@@ -47,33 +48,27 @@ export default function SubmitPage() {
 
   const addFiles = useCallback(
     (files: FileList) => {
-      let rejected = 0;
-      setStaged((prev) => {
-        const next = [...prev];
-        for (const f of Array.from(files)) {
-          const ext = getExt(f.name);
-          const dupe = next.some((s) => s.name === f.name && s.size === f.size);
-          if (dupe) continue;
-          const supportedType = isAccepted(ext);
-          const withinSize = f.size <= MAX_BYTES;
-          const valid = supportedType && withinSize;
-          if (!valid) rejected += 1;
-          next.push({
-            id: uid(),
-            name: f.name,
-            size: f.size,
-            ext: ext || "unknown",
-            valid,
-            reason: !supportedType
-              ? `Unsupported type · ${ext ? "." + ext : "no extension"}`
-              : !withinSize
-              ? "Exceeds 25 MB limit"
-              : "",
-          });
-        }
-        return next;
-      });
-      if (rejected) showToast(`${rejected} file(s) rejected · unsupported type or too large`);
+      const f = files[0];
+      if (!f) return;
+      const ext = getExt(f.name);
+      const supportedType = isAccepted(ext);
+      const withinSize = f.size <= MAX_BYTES;
+      const valid = supportedType && withinSize;
+      setStaged([
+        {
+          id: uid(),
+          name: f.name,
+          size: f.size,
+          ext: ext || "unknown",
+          valid,
+          reason: !supportedType
+            ? `Unsupported type · ${ext ? "." + ext : "no extension"}`
+            : !withinSize
+            ? "Exceeds 25 MB limit"
+            : "",
+        },
+      ]);
+      if (!valid) showToast("File rejected · unsupported type or too large");
     },
     [showToast]
   );
@@ -153,6 +148,8 @@ export default function SubmitPage() {
       />
 
       <div className="portal__body">
+        <ProductContext />
+
         <nav className="crumbs" aria-label="Breadcrumb">
           <Link href="/">Portal</Link>
           <span className="crumbs__sep">/</span>
@@ -214,7 +211,6 @@ function AttachButton({ onAttach }: { onAttach: (files: FileList) => void }) {
       <input
         ref={inputRef}
         type="file"
-        multiple
         accept=".pdf,.csv,.xls,.xlsx"
         hidden
         onChange={(e) => {

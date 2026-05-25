@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { CategoryId } from "@/lib/types";
 import { ChevronIcon, FilterIcon, SearchIcon, XIcon } from "./Icon";
 import { DatacorWordmark } from "./DatacorWordmark";
@@ -35,7 +36,9 @@ export function Header({
   return (
     <header className="portal-header">
       <div className="portal-header__left">
-        <DatacorWordmark />
+        <Link href="/" aria-label="Go to portal home">
+          <DatacorWordmark />
+        </Link>
         <span className="portal-header__divider" />
         <span className="portal-header__product">JARVE Portal</span>
       </div>

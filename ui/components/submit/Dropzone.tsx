@@ -63,7 +63,6 @@ export function Dropzone({ onFiles }: DropzoneProps) {
       <input
         ref={inputRef}
         type="file"
-        multiple
         accept={ACCEPT_ATTR}
         aria-label="Choose files to attach"
         onChange={(e) => {

@@ -18,7 +18,7 @@ export function ProductRow({ product, onTogglePin }: ProductRowProps) {
   const cat = CATEGORIES.find((c) => c.id === product.category);
 
   return (
-    <article className="row" onClick={() => router.push("/submit")}>
+    <article className="row" onClick={() => router.push(`/submit?product=${product.id}`)}>
       <div className="row__logo">
         <img src={logo.src} alt={logo.alt} />
       </div>

@@ -61,7 +61,7 @@ export function PoTrackSearch() {
               setValue(e.target.value);
               if (error) setError("");
             }}
-            placeholder="PO-YYYY-NN"
+            placeholder="XXXXXXXXXX"
             aria-label="Tracking ID"
             aria-invalid={error ? "true" : "false"}
             spellCheck={false}

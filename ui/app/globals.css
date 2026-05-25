@@ -1854,6 +1854,73 @@ button {
   transform: translate(-50%, -4px);
 }
 
+/* ── Submit: selected-product context banner ─────────────────── */
+.submit-product {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1.125rem;
+  background: var(--portal-card);
+  border: 1px solid var(--portal-border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.25rem;
+}
+.submit-product__logo-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+}
+.submit-product__logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.submit-product__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex: 1;
+  min-width: 0;
+}
+.submit-product__label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--portal-text-muted);
+}
+.submit-product__name {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--portal-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.submit-product__tagline {
+  font-size: 0.8125rem;
+  color: var(--portal-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.submit-product__change {
+  font-size: 0.8125rem;
+  color: var(--portal-link);
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--r-sm);
+}
+.submit-product__change:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 720px) {
   .attach-actions {
     flex-direction: column;
