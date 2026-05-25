@@ -26,6 +26,11 @@ export const LOGOS: Record<LogoId, LogoArt> = {
     alt: "Pennent Mill Manager — a datacor product",
     ratio: 2558 / 757,
   },
+  salesforce: {
+    src: "/logos/salesforce.png",
+    alt: "Salesforce",
+    ratio: 1280 / 910,
+  },
 };
 
 export const PRODUCTS: Product[] = [
@@ -61,5 +66,16 @@ export const PRODUCTS: Product[] = [
     status: "active",
     lastUsed: "Yesterday",
     version: "6.1",
+  },
+  {
+    id: "salesforce",
+    name: "Salesforce",
+    tagline: "CRM platform for sales, service, and marketing automation",
+    category: "customer",
+    logo: "salesforce",
+    pinned: false,
+    status: "active",
+    lastUsed: "Today, 8:15 AM",
+    version: "Spring '26",
   },
 ];

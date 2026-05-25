@@ -18,7 +18,7 @@ export interface LogoArt {
   ratio: number;
 }
 
-export type LogoId = "erp" | "feedmill" | "pennentmill";
+export type LogoId = "erp" | "feedmill" | "pennentmill" | "salesforce";
 
 export type ProductStatus = "active" | "new";
 
