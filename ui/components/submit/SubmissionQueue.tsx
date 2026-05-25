@@ -1,12 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarBlankIcon } from "../Icon";
+import { ArrowIcon, CalendarBlankIcon } from "../Icon";
 import { fmtBytes, isAccepted, relativeTime, type Submission } from "@/lib/submit-types";
 
 interface SubmissionQueueProps {
   submissions: Submission[];
   freshIds: Set<string>;
+}
+
+function openPoForm(row: Submission) {
+  window.open(
+    `/po-form?id=${encodeURIComponent(row.id)}&file=${encodeURIComponent(row.name)}`,
+    `po-form-${row.id}`,
+    "width=1240,height=900,resizable=yes,scrollbars=yes"
+  );
 }
 
 export function SubmissionQueue({ submissions, freshIds }: SubmissionQueueProps) {
@@ -51,6 +59,7 @@ export function SubmissionQueue({ submissions, freshIds }: SubmissionQueueProps)
               <th className="col-id">ID</th>
               <th>File name</th>
               <th className="col-status">Status</th>
+              <th className="col-action"></th>
             </tr>
           </thead>
           <tbody>
@@ -82,6 +91,19 @@ export function SubmissionQueue({ submissions, freshIds }: SubmissionQueueProps)
                       <span className="qstatus__dot" />
                       {isDone ? "Completed" : "In progress"}
                     </span>
+                  </td>
+                  <td className="col-action">
+                    {isDone && (
+                      <button
+                        className="queue-view-btn"
+                        type="button"
+                        onClick={() => openPoForm(row)}
+                        title="Open PO form"
+                      >
+                        View PO
+                        <ArrowIcon size={12} />
+                      </button>
+                    )}
                   </td>
                 </tr>
               );
