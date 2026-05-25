@@ -16,8 +16,33 @@ import {
   uid,
   type StagedFile,
   type Submission,
+  type SubmissionStatus,
 } from "@/lib/submit-types";
 import type { CategoryId } from "@/lib/types";
+
+const PO_API_BASE = "https://eldercare-reflex-companion.ngrok-free.dev/api/po/";
+const NGROK_HEADERS = { "ngrok-skip-browser-warning": "true" };
+
+function mapApiSubmission(r: Record<string, unknown>): Submission {
+  const name = String(r.filename ?? r.file_name ?? r.name ?? "document.pdf");
+  const rawStatus = String(r.status ?? "completed").toLowerCase().replace("_", "-");
+  const status: SubmissionStatus =
+    rawStatus === "in-progress" ? "in-progress"
+    : rawStatus === "failed" ? "failed"
+    : "completed";
+  return {
+    id: String(r.id ?? r.submission_id ?? uid()),
+    name,
+    size: Number(r.size ?? r.file_size ?? 0),
+    ext: getExt(name) || "pdf",
+    status,
+    submittedAt: r.created_at
+      ? new Date(String(r.created_at)).getTime()
+      : r.timestamp
+      ? Number(r.timestamp) * 1000
+      : Date.now(),
+  };
+}
 
 export default function SubmitPage() {
   const [query, setQuery] = useState("");
@@ -28,11 +53,29 @@ export default function SubmitPage() {
   const [staged, setStaged] = useState<StagedFile[]>([]);
   const [pendingFile, setPendingFile] = useState<StagedFile | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [queueLoading, setQueueLoading] = useState(true);
   const [freshIds, setFreshIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState("");
   const seqRef = useRef(1);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const completionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  useEffect(() => {
+    fetch(PO_API_BASE, { headers: NGROK_HEADERS })
+      .then((res) => res.json())
+      .then((data: unknown) => {
+        const list: unknown[] = Array.isArray(data)
+          ? data
+          : Array.isArray((data as Record<string, unknown>).data)
+          ? (data as Record<string, unknown>).data as unknown[]
+          : Array.isArray((data as Record<string, unknown>).submissions)
+          ? (data as Record<string, unknown>).submissions as unknown[]
+          : [];
+        setSubmissions(list.map((item) => mapApiSubmission(item as Record<string, unknown>)));
+      })
+      .catch(() => { /* API unreachable — start with empty queue */ })
+      .finally(() => setQueueLoading(false));
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -219,7 +262,7 @@ export default function SubmitPage() {
           </div>
         </section>
 
-        <SubmissionQueue submissions={submissions} freshIds={freshIds} />
+        <SubmissionQueue submissions={submissions} freshIds={freshIds} loading={queueLoading} />
       </div>
 
       <div className={`toast ${toast ? "is-visible" : ""}`} role="status" aria-live="polite">

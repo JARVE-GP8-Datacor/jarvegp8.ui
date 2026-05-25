@@ -7,6 +7,7 @@ import { fmtBytes, isAccepted, relativeTime, type Submission } from "@/lib/submi
 interface SubmissionQueueProps {
   submissions: Submission[];
   freshIds: Set<string>;
+  loading?: boolean;
 }
 
 function openPoForm(row: Submission) {
@@ -17,7 +18,7 @@ function openPoForm(row: Submission) {
   );
 }
 
-export function SubmissionQueue({ submissions, freshIds }: SubmissionQueueProps) {
+export function SubmissionQueue({ submissions, freshIds, loading = false }: SubmissionQueueProps) {
   const total = submissions.length;
   const inProgress = submissions.filter((s) => s.status === "in-progress").length;
   const completed = submissions.filter((s) => s.status === "completed").length;
@@ -42,7 +43,13 @@ export function SubmissionQueue({ submissions, freshIds }: SubmissionQueueProps)
         </div>
       </header>
 
-      {total === 0 ? (
+      {loading ? (
+        <div className="queue-empty">
+          <div className="queue-empty__title" style={{ color: "var(--portal-text-faint)" }}>
+            Loading submissions…
+          </div>
+        </div>
+      ) : total === 0 ? (
         <div className="queue-empty">
           <div className="queue-empty__icon">
             <CalendarBlankIcon />
