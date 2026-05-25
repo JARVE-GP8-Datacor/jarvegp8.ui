@@ -20,8 +20,8 @@ import {
 } from "@/lib/submit-types";
 import type { CategoryId } from "@/lib/types";
 
-const PO_API_BASE = "https://eldercare-reflex-companion.ngrok-free.dev/api/po/";
-const NGROK_HEADERS = { "ngrok-skip-browser-warning": "true" };
+const PO_API_BASE = "/api/po/";
+const NGROK_HEADERS = {};
 
 function mapApiSubmission(r: Record<string, unknown>): Submission {
   const name = String(r.filename ?? r.file_name ?? r.name ?? "document.pdf");
