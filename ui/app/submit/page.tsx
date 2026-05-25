@@ -50,6 +50,7 @@ export default function SubmitPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [pinnedOnly, setPinnedOnly] = useState(false);
 
+  const [productId, setProductId] = useState<string | null>(null);
   const [staged, setStaged] = useState<StagedFile[]>([]);
   const [pendingFile, setPendingFile] = useState<StagedFile | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -59,6 +60,10 @@ export default function SubmitPage() {
   const seqRef = useRef(1);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const completionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
+  useEffect(() => {
+    setProductId(new URLSearchParams(window.location.search).get("product"));
+  }, []);
 
   useEffect(() => {
     fetch(PO_API_BASE, { headers: NGROK_HEADERS })
@@ -159,11 +164,14 @@ export default function SubmitPage() {
     showToast("File submitted — uploading…");
 
     const body = new FormData();
-    body.append("file", f.fileRef ?? new Blob([f.name], { type: "text/plain" }), f.name);
+    body.append("file", f.name);
+    if (productId === "pennentmill") {
+      body.append("project_code", "pmm");
+    }
 
-    fetch("https://eldercare-reflex-companion.ngrok-free.dev/api/po/upload", {
+    fetch(`${PO_API_BASE}upload`, {
       method: "POST",
-      headers: { "ngrok-skip-browser-warning": "true" },
+      headers: NGROK_HEADERS,
       body,
     })
       .then((res) => {
@@ -180,7 +188,7 @@ export default function SubmitPage() {
         );
         showToast("Upload failed · network error");
       });
-  }, [staged, showToast]);
+  }, [staged, showToast, productId]);
 
   const validCount = staged.filter((s) => s.valid).length;
   const totalCount = staged.length;
