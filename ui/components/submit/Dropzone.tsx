@@ -59,6 +59,10 @@ export function Dropzone({ onFiles }: DropzoneProps) {
         <span className="type-pill">.CSV</span>
         <span className="type-pill">.XLS</span>
         <span className="type-pill">.XLSX</span>
+        <span className="type-pill">.JPG</span>
+        <span className="type-pill">.PNG</span>
+        <span className="type-pill">.TIFF</span>
+        <span className="type-pill">.WEBP</span>
       </div>
       <input
         ref={inputRef}

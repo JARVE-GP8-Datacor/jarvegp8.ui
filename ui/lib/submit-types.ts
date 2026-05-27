@@ -1,4 +1,4 @@
-export const ACCEPTED_EXTENSIONS = ["pdf", "csv", "xls", "xlsx"] as const;
+export const ACCEPTED_EXTENSIONS = ["pdf", "csv", "xls", "xlsx", "jpg", "jpeg", "png", "tiff", "tif", "webp"] as const;
 export type AcceptedExt = (typeof ACCEPTED_EXTENSIONS)[number];
 
 export const ACCEPT_ATTR = [
@@ -6,10 +6,20 @@ export const ACCEPT_ATTR = [
   ".csv",
   ".xls",
   ".xlsx",
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".tiff",
+  ".tif",
+  ".webp",
   "application/pdf",
   "text/csv",
   "application/vnd.ms-excel",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "image/jpeg",
+  "image/png",
+  "image/tiff",
+  "image/webp",
 ].join(",");
 
 export const MAX_BYTES = 25 * 1024 * 1024; // 25 MB

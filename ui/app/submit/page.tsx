@@ -185,6 +185,7 @@ export default function SubmitPage() {
     showToast("File submitted — uploading…");
 
     const body = new FormData();
+    if (!f.fileRef) return;
     body.append("file", f.fileRef);
     if (productId === "pennentmill") {
       body.append("project_code", "pmm");
@@ -266,7 +267,7 @@ export default function SubmitPage() {
               <span className="card__kicker">Step 1</span>
               <h2 className="card__title">Attach PO documents</h2>
               <p className="card__sub">
-                Supported file types: PDF, CSV, XLS, XLSX · 25&nbsp;MB max per file
+                Supported file types: PDF, CSV, XLS, XLSX, JPG, PNG, TIFF, WEBP · 25&nbsp;MB max per file
               </p>
             </div>
           </header>
@@ -337,7 +338,7 @@ function AttachButton({ onAttach }: { onAttach: (files: FileList) => void }) {
       <input
         ref={inputRef}
         type="file"
-        accept=".pdf,.csv,.xls,.xlsx"
+        accept=".pdf,.csv,.xls,.xlsx,.jpg,.jpeg,.png,.tiff,.tif,.webp,image/jpeg,image/png,image/tiff,image/webp"
         hidden
         onChange={(e) => {
           if (e.target.files?.length) onAttach(e.target.files);
