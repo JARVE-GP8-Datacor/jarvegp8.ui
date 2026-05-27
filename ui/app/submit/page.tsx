@@ -185,7 +185,7 @@ export default function SubmitPage() {
     showToast("File submitted — uploading…");
 
     const body = new FormData();
-    body.append("file", f.name);
+    body.append("file", f.fileRef);
     if (productId === "pennentmill") {
       body.append("project_code", "pmm");
     }
