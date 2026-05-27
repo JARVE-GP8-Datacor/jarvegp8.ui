@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const UPSTREAM = "https://eldercare-reflex-companion.ngrok-free.dev/api/po/upload";
+const UPSTREAM =
+  `${process.env.UPSTREAM_API ?? "https://eldercare-reflex-companion.ngrok-free.dev/api/po"}/upload`;
 
 export async function POST(req: NextRequest) {
   const body = await req.formData();

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const UPSTREAM_BASE = "https://eldercare-reflex-companion.ngrok-free.dev/api/po/";
+const UPSTREAM_BASE =
+  `${process.env.UPSTREAM_API ?? "https://eldercare-reflex-companion.ngrok-free.dev/api/po"}/`;
 
 export async function GET(
   _req: NextRequest,
