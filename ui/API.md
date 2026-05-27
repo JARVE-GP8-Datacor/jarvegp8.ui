@@ -1,18 +1,27 @@
 # JARVE GP8 UI — API Reference
 
 > All requests from the browser go to the Next.js proxy routes (`/api/po/…`).  
-> The proxy forwards them server-side to the upstream ngrok backend, bypassing CORS.  
+> The proxy forwards them server-side to the upstream backend, bypassing CORS.  
+> Backend base URL is configured via the `BACKEND_URL` environment variable (see `.env.example`).  
 > Generated: 2026-05-26
+
+---
+
+## Environment
+
+| Variable | Description | Default |
+|---|---|---|
+| `UPSTREAM_API` | Full URL of the backend PO endpoint, no trailing slash — set in `.env.local` | `https://eldercare-reflex-companion.ngrok-free.dev/api/po` |
 
 ---
 
 ## Proxy routes
 
-| Method | Local route | Upstream |
+| Method | Local route | Upstream path |
 |---|---|---|
-| `GET` | `/api/po` | `GET https://eldercare-reflex-companion.ngrok-free.dev/api/po` |
-| `POST` | `/api/po/upload` | `POST https://eldercare-reflex-companion.ngrok-free.dev/api/po/upload` |
-| `GET` | `/api/po/[id]` | `GET https://eldercare-reflex-companion.ngrok-free.dev/api/po/<id>` |
+| `GET` | `/api/po` | `$UPSTREAM_API` |
+| `POST` | `/api/po/upload` | `$UPSTREAM_API/upload` |
+| `GET` | `/api/po/[id]` | `$UPSTREAM_API/<id>` |
 
 All upstream requests include the header `ngrok-skip-browser-warning: true`.
 

@@ -72,13 +72,18 @@ See [API.md](API.md) for all endpoints consumed by the UI.
 
 ## Environment
 
-No `.env` file is required. The upstream API base URL is hardcoded in the proxy route handlers (`app/api/po/`). To point to a different backend, update the `UPSTREAM` constant in each route file.
+Copy `.env.example` to `.env.local` and set the backend URL:
 
-| File | Constant | Default |
+```bash
+cp .env.example .env.local
+```
+
+| Variable | Required | Description |
 |---|---|---|
-| `app/api/po/route.ts` | `UPSTREAM` | `https://eldercare-reflex-companion.ngrok-free.dev/api/po` |
-| `app/api/po/upload/route.ts` | `UPSTREAM` | `https://eldercare-reflex-companion.ngrok-free.dev/api/po/upload` |
-| `app/api/po/[id]/route.ts` | `UPSTREAM_BASE` | `https://eldercare-reflex-companion.ngrok-free.dev/api/po/` |
+| `UPSTREAM_API` | yes | Full URL of the backend PO endpoint, no trailing slash (e.g. `https://your-host.ngrok-free.app/api/po`) |
+
+`.env.local` is gitignored. Never commit it.  
+All three proxy route handlers (`app/api/po/`) read `process.env.UPSTREAM_API` at runtime; they fall back to the default ngrok URL if the variable is absent.
 
 ---
 
