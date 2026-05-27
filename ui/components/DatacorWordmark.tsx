@@ -8,7 +8,7 @@ export function DatacorWordmark() {
         className="datacor-wordmark__mark"
         aria-hidden="true"
       />
-      <span className="datacor-wordmark__text">JARVE GP8</span>
+      <span className="datacor-wordmark__text">JARVE GP3</span>
     </div>
   );
 }

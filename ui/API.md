@@ -1,8 +1,8 @@
-# JARVE GP8 UI — API Reference
+# JARVE GP3 UI — API Reference
 
 > All requests from the browser go to the Next.js proxy routes (`/api/po/…`).  
 > The proxy forwards them server-side to the upstream backend, bypassing CORS.  
-> Backend base URL is configured via the `BACKEND_URL` environment variable (see `.env.example`).  
+> Backend base URL is configured via the `UPSTREAM_API` environment variable (see `.env.example`).  
 > Generated: 2026-05-26
 
 ---

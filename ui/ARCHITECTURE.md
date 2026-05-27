@@ -1,4 +1,4 @@
-# JARVE GP8 UI — Architecture
+# JARVE GP3 UI — Architecture
 
 > Generated: 2026-05-26
 
@@ -21,7 +21,7 @@
 
 | Component | File | Purpose |
 |---|---|---|
-| `Header` | `components/Header.tsx` | Top bar; JARVE GP8 wordmark links to `/` |
+| `Header` | `components/Header.tsx` | Top bar; JARVE GP3 wordmark links to `/` |
 | `DatacorWordmark` | `components/DatacorWordmark.tsx` | Logo text — NOT a link itself (Link wrapper is in Header) |
 | `ProductGrid` | `components/ProductGrid.tsx` | Grid / list view switcher for product catalog |
 | `ProductTile` | `components/ProductTile.tsx` | Card view — navigates to `/submit?product=<id>` |
@@ -128,7 +128,7 @@ Discard & Close
 |---|---|---|
 | Product tile / row click | `/submit?product=<id>` | `router.push()` |
 | Tracking ID search (10 chars) | `/orders/<id>` | Validated client-side before navigation |
-| JARVE GP8 wordmark | `/` | `<Link href="/">` wrapper in `Header.tsx` |
+| JARVE GP3 wordmark | `/` | `<Link href="/">` wrapper in `Header.tsx` |
 | "View PO" button | `/po-form?id=...&file=...` | `window.open()` — named popup, reuses same window per PO ID |
 | "Change product" in ProductContext | `/` | `<Link href="/">` |
 

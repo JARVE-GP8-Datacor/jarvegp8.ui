@@ -102,7 +102,7 @@ function PoFormView() {
   }, [id]);
 
   useEffect(() => {
-    document.title = `${form.purchaseOrderNumber} · PO Form · JARVE GP8 Portal`;
+    document.title = `${form.purchaseOrderNumber} · PO Form · JARVE GP3 Portal`;
   }, [form.purchaseOrderNumber]);
 
   const update = <K extends keyof PoFormData>(key: K, value: PoFormData[K]) =>

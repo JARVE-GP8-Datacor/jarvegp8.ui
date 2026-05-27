@@ -1,4 +1,4 @@
-# JARVE GP8 — UI
+# JARVE GP3 — UI
 
 > Next.js portal for submitting and tracking Purchase Orders across Datacor product lines.  
 > Stack: Next.js 16.2.6 · React 19 · TypeScript (strict) · Turbopack  
