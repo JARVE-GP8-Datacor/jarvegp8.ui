@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { ArrowIcon, CalendarBlankIcon } from "../Icon";
 import { fmtBytes, isAccepted, relativeTime, type Submission } from "@/lib/submit-types";
 
@@ -8,14 +9,6 @@ interface SubmissionQueueProps {
   submissions: Submission[];
   freshIds: Set<string>;
   loading?: boolean;
-}
-
-function openPoForm(row: Submission) {
-  window.open(
-    `/po-form?id=${encodeURIComponent(row.id)}&file=${encodeURIComponent(row.name)}`,
-    `po-form-${row.id}`,
-    "width=1240,height=900,resizable=yes,scrollbars=yes"
-  );
 }
 
 export function SubmissionQueue({ submissions, freshIds, loading = false }: SubmissionQueueProps) {
@@ -101,17 +94,14 @@ export function SubmissionQueue({ submissions, freshIds, loading = false }: Subm
                     </span>
                   </td>
                   <td className="col-action">
-                    {isDone && (
-                      <button
-                        className="queue-view-btn"
-                        type="button"
-                        onClick={() => openPoForm(row)}
-                        title="Open PO form"
-                      >
-                        View PO
-                        <ArrowIcon size={12} />
-                      </button>
-                    )}
+                    <Link
+                      href={`/po/${encodeURIComponent(row.id)}`}
+                      className="queue-view-btn"
+                      title="View PO detail"
+                    >
+                      {row.status === "in-progress" ? "Track" : "View PO"}
+                      <ArrowIcon size={12} />
+                    </Link>
                   </td>
                 </tr>
               );

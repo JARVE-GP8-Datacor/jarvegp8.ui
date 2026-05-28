@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { PaperclipIcon, SendIcon } from "@/components/Icon";
@@ -47,6 +48,7 @@ function mapApiSubmission(r: Record<string, unknown>): Submission {
 }
 
 export default function SubmitPage() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CategoryId>("all");
   const [filterOpen, setFilterOpen] = useState(false);
@@ -185,7 +187,8 @@ export default function SubmitPage() {
     showToast("File submitted — uploading…");
 
     const body = new FormData();
-    body.append("file", f.name);
+    if (!f.fileRef) return;
+    body.append("file", f.fileRef);
     if (productId === "pennentmill") {
       body.append("project_code", "pmm");
     }
@@ -195,13 +198,28 @@ export default function SubmitPage() {
       headers: NGROK_HEADERS,
       body,
     })
-      .then((res) => {
-        const status: Submission["status"] = res.ok ? "completed" : "failed";
-        setSubmissions((prev) =>
-          prev.map((s) => (s.id === subId ? { ...s, status } : s))
-        );
-        if (res.ok) showToast("Upload complete");
-        else showToast(`Upload failed · server returned ${res.status}`);
+      .then(async (res) => {
+        if (res.ok) {
+          try {
+            const json = await res.json();
+            const poId = String(
+              json.po_id ?? json._id ?? json.id ?? json.tracking_code ?? ""
+            );
+            if (poId) {
+              router.push(`/po/${encodeURIComponent(poId)}`);
+              return;
+            }
+          } catch { /* fall through if JSON parse fails */ }
+          setSubmissions((prev) =>
+            prev.map((s) => (s.id === subId ? { ...s, status: "completed" } : s))
+          );
+          showToast("Upload complete");
+        } else {
+          setSubmissions((prev) =>
+            prev.map((s) => (s.id === subId ? { ...s, status: "failed" } : s))
+          );
+          showToast(`Upload failed · server returned ${res.status}`);
+        }
       })
       .catch(() => {
         setSubmissions((prev) =>
@@ -266,7 +284,7 @@ export default function SubmitPage() {
               <span className="card__kicker">Step 1</span>
               <h2 className="card__title">Attach PO documents</h2>
               <p className="card__sub">
-                Supported file types: PDF, CSV, XLS, XLSX · 25&nbsp;MB max per file
+                Supported file types: PDF, CSV, XLS, XLSX, JPG, PNG, TIFF, WEBP · 25&nbsp;MB max per file
               </p>
             </div>
           </header>
@@ -337,7 +355,7 @@ function AttachButton({ onAttach }: { onAttach: (files: FileList) => void }) {
       <input
         ref={inputRef}
         type="file"
-        accept=".pdf,.csv,.xls,.xlsx"
+        accept=".pdf,.csv,.xls,.xlsx,.jpg,.jpeg,.png,.tiff,.tif,.webp,image/jpeg,image/png,image/tiff,image/webp"
         hidden
         onChange={(e) => {
           if (e.target.files?.length) onAttach(e.target.files);
