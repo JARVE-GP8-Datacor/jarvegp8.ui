@@ -3,5 +3,8 @@
   command = "npm run build"
   publish = ".next"
 
+[build.environment]
+  UPSTREAM_API = "https://eldercare-reflex-companion.ngrok-free.dev/api/po"
+
 [[plugins]]
   package = "@netlify/plugin-nextjs"
