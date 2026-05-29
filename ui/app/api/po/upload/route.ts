@@ -5,8 +5,10 @@ const UPSTREAM =
 
 export async function POST(req: NextRequest) {
   const body = await req.formData();
+  const qs = req.nextUrl.searchParams.toString();
+  const url = qs ? `${UPSTREAM}?${qs}` : UPSTREAM;
 
-  const res = await fetch(UPSTREAM, {
+  const res = await fetch(url, {
     method: "POST",
     headers: { "ngrok-skip-browser-warning": "true" },
     body,
