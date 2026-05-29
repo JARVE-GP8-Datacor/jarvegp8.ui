@@ -52,7 +52,7 @@ export default function SubmitPage() {
   const [filterOpen, setFilterOpen] = useState(false);
   const [pinnedOnly, setPinnedOnly] = useState(false);
 
-  const [productId, setProductId] = useState<string | null>(null);
+  const [projectCode, setProjectCode] = useState<string | null>(null);
   const [staged, setStaged] = useState<StagedFile[]>([]);
   const [pendingFile, setPendingFile] = useState<StagedFile | null>(null);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
@@ -66,7 +66,7 @@ export default function SubmitPage() {
   const completionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
-    setProductId(new URLSearchParams(window.location.search).get("product"));
+    setProjectCode(new URLSearchParams(window.location.search).get("project_code"));
   }, []);
 
   const fetchQueue = (opts: { initial?: boolean } = {}) =>
@@ -99,11 +99,11 @@ export default function SubmitPage() {
   }, []);
 
   useEffect(() => {
-    if (!productId) return;
+    if (!projectCode) return;
     const t = window.setInterval(() => fetchQueue(), 5000);
     return () => window.clearInterval(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productId]);
+  }, [projectCode]);
 
   useEffect(() => {
     return () => {
@@ -191,11 +191,12 @@ export default function SubmitPage() {
     const body = new FormData();
     if (!f.fileRef) return;
     body.append("file", f.fileRef);
-    if (productId === "pennentmill") {
-      body.append("project_code", "pmm");
-    }
 
-    fetch(`${PO_API_BASE}upload`, {
+    const uploadUrl = projectCode
+      ? `${PO_API_BASE}upload?project_code=${encodeURIComponent(projectCode)}`
+      : `${PO_API_BASE}upload`;
+
+    fetch(uploadUrl, {
       method: "POST",
       headers: NGROK_HEADERS,
       body,
@@ -233,7 +234,7 @@ export default function SubmitPage() {
         );
         showToast("Upload failed · network error");
       });
-  }, [staged, showToast, productId]);
+  }, [staged, showToast, projectCode]);
 
   const handleToggleExpand = useCallback((id: string) => {
     if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
