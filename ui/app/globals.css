@@ -2999,4 +2999,20 @@ textarea.field__input {
 
 /* Update button highlight when dirty */
 .btn-ghost--highlight { border-color: var(--ds-medium-blue); color: var(--ds-medium-blue); }
+
+/* PO tracking — project banner */
+.po-project-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1rem;
+  background: var(--portal-surface);
+  border: 1px solid var(--portal-border);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+.po-project-banner__label { color: var(--portal-text-faint); }
+.po-project-banner__name { color: var(--portal-text); }
+.po-project-banner__link { margin-left: auto; font-size: 0.82rem; }
 .btn-ghost--highlight:hover { background: #eaf3fd; }

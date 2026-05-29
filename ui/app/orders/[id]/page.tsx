@@ -1,11 +1,13 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
+import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Breadcrumb } from "@/components/po/Breadcrumb";
 import { PoPageHeader } from "@/components/po/PoPageHeader";
 import { EtaStrip } from "@/components/po/EtaStrip";
 import { StageTracker } from "@/components/po/StageTracker";
+import { PRODUCTS } from "@/lib/data";
 import type { PoStage, PoSummary } from "@/lib/po-types";
 
 // ── Stage mapping ──────────────────────────────────────────────────────────
@@ -66,6 +68,7 @@ interface ApiPayload {
 interface ApiStatus {
   status: string;
   tracking_code: string;
+  project_code?: string;
   normalized_payload?: ApiPayload;
   error_message: string | null;
 }
@@ -127,6 +130,7 @@ function buildSummary(id: string, api: ApiStatus): PoSummary {
 export default function PoTrackingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [po, setPo] = useState<PoSummary | null>(null);
+  const [projectCode, setProjectCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -135,6 +139,7 @@ export default function PoTrackingPage({ params }: { params: Promise<{ id: strin
         if (!res.ok) { setError(`PO not found (${res.status})`); return; }
         const data: ApiStatus = await res.json();
         setPo(buildSummary(id, data));
+        setProjectCode(data.project_code?.toLowerCase() ?? null);
       })
       .catch(() => setError("Network error — could not load PO."));
   }, [id]);
@@ -161,6 +166,9 @@ export default function PoTrackingPage({ params }: { params: Promise<{ id: strin
 
   const doneCount = po.stages.filter((s) => s.state === "done").length;
   const progressPct = Math.round((doneCount / po.stages.length) * 100);
+  const product = projectCode
+    ? PRODUCTS.find((p) => p.project_code === projectCode)
+    : null;
 
   return (
     <div className="portal">
@@ -168,6 +176,18 @@ export default function PoTrackingPage({ params }: { params: Promise<{ id: strin
       <div className="portal__body">
         <Breadcrumb current={po.id} />
         <PoPageHeader po={po} />
+        {product && (
+          <div className="po-project-banner">
+            <span className="po-project-banner__label">Project</span>
+            <strong className="po-project-banner__name">{product.name}</strong>
+            <Link
+              href={`/submit?project_code=${product.project_code}`}
+              className="po-project-banner__link btn-ghost"
+            >
+              Submit another PO →
+            </Link>
+          </div>
+        )}
         <div className="po-layout">
           <div className="po-main">
             <EtaStrip eta={po.eta} />
