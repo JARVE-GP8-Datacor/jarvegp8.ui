@@ -462,7 +462,7 @@ function PodField({ label, value, mono = false, onChange }: {
       {onChange ? (
         <input
           className={`pod-field__input${mono ? " pod-field__input--mono" : ""}`}
-          value={value}
+          value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
         />
       ) : (
