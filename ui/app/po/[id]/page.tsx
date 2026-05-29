@@ -195,10 +195,10 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
     if (!editedPayload) return;
     setActionLoading("update");
     try {
-      const res = await fetch(`/api/po/${id}/update`, {
+      const res = await fetch(`/api/po/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ normalized_payload: editedPayload }),
+        body: JSON.stringify({ payload: editedPayload }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       showToast("PO updated successfully");
