@@ -294,6 +294,7 @@ export default function SubmitPage() {
         pinnedOnly={pinnedOnly}
         setPinnedOnly={setPinnedOnly}
         showFilter={false}
+        showSearch={false}
       />
 
       <div className="portal__body">

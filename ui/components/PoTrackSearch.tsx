@@ -17,8 +17,8 @@ export function PoTrackSearch() {
       setError("Enter a tracking ID to search.");
       return;
     }
-    if (id.length !== 10) {
-      setError("Tracking IDs are exactly 10 characters. Check and try again.");
+    if (id.length !== 11) {
+      setError("Tracking IDs are exactly 11 characters. Check and try again.");
       return;
     }
     if (!PO_RECORDS[id]) {

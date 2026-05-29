@@ -17,6 +17,7 @@ interface HeaderProps {
   pinnedOnly: boolean;
   setPinnedOnly: (v: boolean) => void;
   showFilter?: boolean;
+  showSearch?: boolean;
 }
 
 export function Header({
@@ -30,6 +31,7 @@ export function Header({
   pinnedOnly,
   setPinnedOnly,
   showFilter = true,
+  showSearch = true,
 }: HeaderProps) {
   const filterCount = (category !== "all" ? 1 : 0) + (pinnedOnly ? 1 : 0);
 
@@ -43,26 +45,28 @@ export function Header({
         <span className="portal-header__product">JARVE Portal</span>
       </div>
 
-      <div className="portal-header__search">
-        <SearchIcon size={18} />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search applications, documents, support…"
-          aria-label="Search"
-        />
-        {query && (
-          <button
-            className="portal-header__search-clear"
-            onClick={() => setQuery("")}
-            aria-label="Clear"
-          >
-            <XIcon />
-          </button>
-        )}
-        <kbd className="portal-header__kbd">⌘K</kbd>
-      </div>
+      {showSearch && (
+        <div className="portal-header__search">
+          <SearchIcon size={18} />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search applications, documents, support…"
+            aria-label="Search"
+          />
+          {query && (
+            <button
+              className="portal-header__search-clear"
+              onClick={() => setQuery("")}
+              aria-label="Clear"
+            >
+              <XIcon />
+            </button>
+          )}
+          <kbd className="portal-header__kbd">⌘K</kbd>
+        </div>
+      )}
 
       <div className="portal-header__right">
         {showFilter && (
