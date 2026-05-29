@@ -44,6 +44,7 @@ export const PRODUCTS: Product[] = [
     status: "active",
     lastUsed: "Today, 9:02 AM",
     version: "2025.2",
+    project_code: "erp",
   },
   {
     id: "feedmill",
@@ -55,6 +56,7 @@ export const PRODUCTS: Product[] = [
     status: "active",
     lastUsed: "Today, 11:48 AM",
     version: "8.4",
+    project_code: "fmm",
   },
   {
     id: "pennentmill",
@@ -78,5 +80,6 @@ export const PRODUCTS: Product[] = [
     status: "active",
     lastUsed: "Today, 8:15 AM",
     version: "Spring '26",
+    project_code: "salesforce",
   },
 ];
