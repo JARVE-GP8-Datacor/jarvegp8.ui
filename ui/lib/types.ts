@@ -32,6 +32,7 @@ export interface Product {
   status: ProductStatus;
   lastUsed: string;
   version: string;
+  project_code?: string;
 }
 
 export type ViewMode = "grid" | "list";

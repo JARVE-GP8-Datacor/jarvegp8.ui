@@ -64,13 +64,20 @@ export default function SubmitPage() {
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const collapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const completionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const projectCodeRef = useRef<string | null>(null);
 
   useEffect(() => {
-    setProjectCode(new URLSearchParams(window.location.search).get("project_code"));
+    const code = new URLSearchParams(window.location.search).get("project_code");
+    setProjectCode(code);
+    projectCodeRef.current = code;
   }, []);
 
-  const fetchQueue = (opts: { initial?: boolean } = {}) =>
-    fetch(PO_API_BASE, { headers: NGROK_HEADERS })
+  const fetchQueue = (opts: { initial?: boolean } = {}) => {
+    const code = projectCodeRef.current;
+    const url = code
+      ? `${PO_API_BASE}?project_code=${encodeURIComponent(code)}`
+      : PO_API_BASE;
+    return fetch(url, { headers: NGROK_HEADERS })
       .then((res) => res.json())
       .then((data: unknown) => {
         const list: unknown[] = Array.isArray(data)
@@ -92,6 +99,7 @@ export default function SubmitPage() {
         });
       })
       .catch(() => { /* silent — keep current state */ });
+  };
 
   useEffect(() => {
     fetchQueue({ initial: true }).finally(() => setQueueLoading(false));

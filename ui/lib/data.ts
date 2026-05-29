@@ -66,6 +66,7 @@ export const PRODUCTS: Product[] = [
     status: "active",
     lastUsed: "Yesterday",
     version: "6.1",
+    project_code: "pmm",
   },
   {
     id: "salesforce",

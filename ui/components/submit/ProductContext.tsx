@@ -8,8 +8,8 @@ import { LOGOS, PRODUCTS } from "@/lib/data";
 
 function ProductContextInner() {
   const searchParams = useSearchParams();
-  const productId = searchParams.get("product");
-  const product = PRODUCTS.find((p) => p.id === productId) ?? null;
+  const projectCode = searchParams.get("project_code");
+  const product = PRODUCTS.find((p) => p.project_code === projectCode || p.id === projectCode) ?? null;
 
   if (!product) return null;
 
