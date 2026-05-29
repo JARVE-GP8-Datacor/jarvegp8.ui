@@ -387,7 +387,7 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
                         <input className="cell-input cell-input--num" type="number" value={item.unit_price} onChange={(e) => setLineField(item.line_number, "unit_price", e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
                       </td>
                       <td className="num">
-                        <input className="cell-input cell-input--num" type="number" value={item.total} onChange={(e) => setLineField(item.line_number, "total", e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
+                        <span className="cell-readonly">{item.total}</span>
                       </td>
                     </tr>
                   ))}

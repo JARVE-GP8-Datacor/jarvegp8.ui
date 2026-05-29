@@ -2995,6 +2995,7 @@ textarea.field__input {
 .cell-input:focus { outline: none; border-color: var(--ds-medium-blue); background: #fff; box-shadow: 0 0 0 2px rgba(36,141,227,0.1); }
 .cell-input--num { text-align: right; }
 .cell-input--mono { font-family: var(--cc-font-mono); }
+.cell-readonly { display: block; width: 100%; text-align: right; padding: 4px 6px; color: var(--portal-text-faint); font-size: 0.85rem; }
 
 /* Update button highlight when dirty */
 .btn-ghost--highlight { border-color: var(--ds-medium-blue); color: var(--ds-medium-blue); }
