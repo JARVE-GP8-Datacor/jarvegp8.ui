@@ -147,8 +147,10 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
   const [loading,     setLoading]     = useState(true);
   const [activeTab,   setActiveTab]   = useState<"header" | "parties" | "lines" | "project">("header");
   const [copied,      setCopied]      = useState(false);
-  const [actionLoading, setActionLoading] = useState<"approve" | "reprocess" | null>(null);
+  const [actionLoading, setActionLoading] = useState<"approve" | "reprocess" | "update" | null>(null);
   const [toast,       setToast]       = useState("");
+  const [editedPayload, setEditedPayload] = useState<PoPayload | null>(null);
+  const [isDirty,     setIsDirty]     = useState(false);
 
   const toastTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pollInterval = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -185,6 +187,14 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
     };
   }, [fetchStatus]);
 
+  // Initialize editable payload once data loads
+  useEffect(() => {
+    if (data?.payload && !isDirty) {
+      setEditedPayload(data.payload);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.payload]);
+
   const copyTracking = () => {
     if (!data) return;
     navigator.clipboard.writeText(data.tracking_code).then(() => {
@@ -218,6 +228,55 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
       fetchStatus();
     } catch { showToast("Reprocess failed — please retry"); }
     finally { setActionLoading(null); }
+  };
+
+  const doUpdate = async () => {
+    if (!editedPayload) return;
+    setActionLoading("update");
+    try {
+      const res = await fetch(`/api/po/${id}/update`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ normalized_payload: editedPayload }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      showToast("PO updated successfully");
+      setIsDirty(false);
+    } catch { showToast("Update failed — please retry"); }
+    finally { setActionLoading(null); }
+  };
+
+  const setHeader = (key: keyof PoPayload["header"], val: string) => {
+    setEditedPayload((p) => p ? { ...p, header: { ...p.header, [key]: val } } : p);
+    setIsDirty(true);
+  };
+
+  const setParty = (role: "buyer" | "seller", key: keyof PoParty, val: string) => {
+    setEditedPayload((p) => p ? {
+      ...p,
+      parties: { ...p.parties, [role]: { ...p.parties[role], [key]: val } },
+    } : p);
+    setIsDirty(true);
+  };
+
+  const setLineField = (lineNum: number, key: keyof PoLineItem, val: string) => {
+    setEditedPayload((p) => p ? {
+      ...p,
+      line_items: p.line_items.map((l) =>
+        l.line_number === lineNum
+          ? { ...l, [key]: ["quantity", "unit_price", "total", "confidence_score"].includes(key) ? Number(val) : val }
+          : l
+      ),
+    } : p);
+    setIsDirty(true);
+  };
+
+  const setProjectField = (key: string, val: string) => {
+    setEditedPayload((p) => p ? {
+      ...p,
+      project_specific: { ...p.project_specific, [key]: val },
+    } : p);
+    setIsDirty(true);
   };
 
   // ── Loading / Error ────────────────────────────────────────────────────
@@ -256,7 +315,7 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
     return -1;
   })();
 
-  const canApprove   = (["AUTO_APPROVED", "PENDING_REVIEW", "REVIEWING"] as PoStatus[]).includes(data.status);
+  const canSubmit    = (["AUTO_APPROVED", "PENDING_REVIEW", "REVIEWING"] as PoStatus[]).includes(data.status);
   const canReprocess = (["FAILED", "PENDING_REVIEW"] as PoStatus[]).includes(data.status);
   const conf = data.payload?.confidence_score ?? data.confidence_score;
 
@@ -295,24 +354,32 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
             <span className="pod-head__ts">Uploaded {fmtDate(data.created_at)}</span>
           </div>
         </div>
-        {(canApprove || canReprocess) && (
-          <div className="pod-head__actions">
-            {canReprocess && (
-              <button className="btn-ghost" onClick={doReprocess} disabled={actionLoading !== null}>
-                <RefreshIcon size={13} className={actionLoading === "reprocess" ? "spin" : ""} />
-                Reprocess
-              </button>
-            )}
-            {canApprove && (
-              <button className="btn-primary" onClick={doApprove} disabled={actionLoading !== null}>
-                {actionLoading === "approve"
-                  ? <span className="pod-btn-spinner" />
-                  : <CheckIcon size={13} />}
-                Approve PO
-              </button>
-            )}
-          </div>
-        )}
+        <div className="pod-head__actions">
+          {canReprocess && (
+            <button className="btn-ghost" onClick={doReprocess} disabled={actionLoading !== null}>
+              <RefreshIcon size={13} className={actionLoading === "reprocess" ? "spin" : ""} />
+              Reprocess
+            </button>
+          )}
+          {editedPayload && (
+            <button
+              className={`btn-ghost ${isDirty ? "btn-ghost--highlight" : ""}`}
+              onClick={doUpdate}
+              disabled={actionLoading !== null || !isDirty}
+            >
+              {actionLoading === "update" ? <span className="pod-btn-spinner" /> : <SaveIcon size={13} />}
+              Update
+            </button>
+          )}
+          {canSubmit && (
+            <button className="btn-primary" onClick={doApprove} disabled={actionLoading !== null}>
+              {actionLoading === "approve"
+                ? <span className="pod-btn-spinner" />
+                : <CheckIcon size={13} />}
+              Submit PO
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── Section 2: AI Agent Progress ── */}
@@ -405,24 +472,24 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
             ))}
           </div>
 
-          {activeTab === "header" && (
+          {activeTab === "header" && editedPayload && (
             <div className="pod-field-grid">
-              <PodField label="PO Number"     value={data.payload.header.po_number} mono />
-              <PodField label="Issue Date"    value={data.payload.header.issue_date} />
-              <PodField label="Currency"      value={data.payload.header.currency} />
-              <PodField label="Payment Terms" value={data.payload.header.payment_terms} />
-              <PodField label="Delivery Date" value={data.payload.header.delivery_date} />
+              <PodField label="PO Number"     value={editedPayload.header.po_number}     mono onChange={(v) => setHeader("po_number", v)} />
+              <PodField label="Issue Date"    value={editedPayload.header.issue_date}    onChange={(v) => setHeader("issue_date", v)} />
+              <PodField label="Currency"      value={editedPayload.header.currency}      onChange={(v) => setHeader("currency", v)} />
+              <PodField label="Payment Terms" value={editedPayload.header.payment_terms} onChange={(v) => setHeader("payment_terms", v)} />
+              <PodField label="Delivery Date" value={editedPayload.header.delivery_date} onChange={(v) => setHeader("delivery_date", v)} />
             </div>
           )}
 
-          {activeTab === "parties" && (
+          {activeTab === "parties" && editedPayload && (
             <div className="pod-parties">
-              <PartyCard title="Buyer"  party={data.payload.parties.buyer} />
-              <PartyCard title="Seller" party={data.payload.parties.seller} />
+              <PartyCard title="Buyer"  party={editedPayload.parties.buyer}  onChange={(k, v) => setParty("buyer",  k, v)} />
+              <PartyCard title="Seller" party={editedPayload.parties.seller} onChange={(k, v) => setParty("seller", k, v)} />
             </div>
           )}
 
-          {activeTab === "lines" && (
+          {activeTab === "lines" && editedPayload && (
             <div className="pod-lines">
               <table className="lines-table">
                 <thead>
@@ -438,22 +505,30 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
                   </tr>
                 </thead>
                 <tbody>
-                  {data.payload.line_items.map((item) => (
+                  {editedPayload.line_items.map((item) => (
                     <tr key={item.line_number} className={item.flags.length > 0 ? "tr--flagged" : ""}>
                       <td className="seq">{item.line_number}</td>
                       <td>
-                        <div>{item.description}</div>
+                        <input className="cell-input" value={item.description} onChange={(e) => setLineField(item.line_number, "description", e.target.value)} />
                         {item.flags.map((f) => (
                           <span key={f} className="flag-tag">{f.replace(/_/g, " ")}</span>
                         ))}
                       </td>
                       <td>
-                        <code className="cell-mono">{item.sku ?? "—"}</code>
+                        <input className="cell-input cell-input--mono" value={item.sku ?? ""} onChange={(e) => setLineField(item.line_number, "sku", e.target.value)} />
                       </td>
-                      <td className="num">{item.quantity}</td>
-                      <td>{item.unit}</td>
-                      <td className="num">{fmtNum(item.unit_price)}</td>
-                      <td className="num">{fmtNum(item.total)}</td>
+                      <td className="num">
+                        <input className="cell-input cell-input--num" type="number" value={item.quantity} onChange={(e) => setLineField(item.line_number, "quantity", e.target.value)} />
+                      </td>
+                      <td>
+                        <input className="cell-input" value={item.unit} onChange={(e) => setLineField(item.line_number, "unit", e.target.value)} />
+                      </td>
+                      <td className="num">
+                        <input className="cell-input cell-input--num" type="number" value={item.unit_price} onChange={(e) => setLineField(item.line_number, "unit_price", e.target.value)} />
+                      </td>
+                      <td className="num">
+                        <input className="cell-input cell-input--num" type="number" value={item.total} onChange={(e) => setLineField(item.line_number, "total", e.target.value)} />
+                      </td>
                       <td className="num">
                         <span className={`line-conf ${
                           item.confidence_score >= 0.85 ? "line-conf--hi"
@@ -470,8 +545,8 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
                   <tr>
                     <td colSpan={6} className="label">Grand Total</td>
                     <td className="num">
-                      {data.payload.header.currency}{" "}
-                      {fmtNum(data.payload.line_items.reduce((s, i) => s + i.total, 0))}
+                      {editedPayload.header.currency}{" "}
+                      {fmtNum(editedPayload.line_items.reduce((s, i) => s + i.total, 0))}
                     </td>
                     <td />
                   </tr>
@@ -480,13 +555,14 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
             </div>
           )}
 
-          {activeTab === "project" && (
+          {activeTab === "project" && editedPayload && (
             <div className="pod-field-grid">
-              {Object.entries(data.payload.project_specific).map(([k, v]) => (
+              {Object.entries(editedPayload.project_specific).map(([k, v]) => (
                 <PodField
                   key={k}
                   label={k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
                   value={String(v)}
+                  onChange={(val) => setProjectField(k, val)}
                 />
               ))}
             </div>
@@ -520,27 +596,40 @@ function Shell({ children, ...hp }: ShellProps) {
   );
 }
 
-function PodField({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
+function PodField({ label, value, mono = false, onChange }: {
+  label: string;
+  value: string;
+  mono?: boolean;
+  onChange?: (v: string) => void;
+}) {
   return (
     <div className="pod-field">
       <div className="pod-field__label">{label}</div>
-      <div className={`pod-field__value ${mono ? "pod-field__value--mono" : ""}`}>{value || "—"}</div>
+      {onChange ? (
+        <input
+          className={`pod-field__input${mono ? " pod-field__input--mono" : ""}`}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      ) : (
+        <div className={`pod-field__value${mono ? " pod-field__value--mono" : ""}`}>{value || "—"}</div>
+      )}
     </div>
   );
 }
 
-function PartyCard({ title, party }: { title: string; party: PoParty }) {
+function PartyCard({ title, party, onChange }: {
+  title: string;
+  party: PoParty;
+  onChange: (key: keyof PoParty, val: string) => void;
+}) {
   return (
     <div className="pod-party">
       <div className="pod-party__role">{title}</div>
-      <div className="pod-party__name">{party.name}</div>
-      {party.address && <div className="pod-party__row">{party.address}</div>}
-      {party.tax_id && <div className="pod-party__row">Tax ID: {party.tax_id}</div>}
-      {party.contact_email && (
-        <div className="pod-party__row">
-          <a href={`mailto:${party.contact_email}`}>{party.contact_email}</a>
-        </div>
-      )}
+      <input className="pod-field__input pod-party__input" value={party.name} onChange={(e) => onChange("name", e.target.value)} placeholder="Name" />
+      <input className="pod-field__input pod-party__input" value={party.address ?? ""} onChange={(e) => onChange("address", e.target.value)} placeholder="Address" />
+      <input className="pod-field__input pod-party__input" value={party.tax_id ?? ""} onChange={(e) => onChange("tax_id", e.target.value)} placeholder="Tax ID" />
+      <input className="pod-field__input pod-party__input" value={party.contact_email ?? ""} onChange={(e) => onChange("contact_email", e.target.value)} placeholder="Contact email" />
     </div>
   );
 }
@@ -563,6 +652,17 @@ function RefreshIcon({ size = 14, className = "" }: { size?: number; className?:
       <path d="M21 3v5h-5" />
       <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
       <path d="M3 21v-5h5" />
+    </svg>
+  );
+}
+
+function SaveIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor"
+      strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+      <polyline points="17 21 17 13 7 13 7 21" />
+      <polyline points="7 3 7 8 15 8" />
     </svg>
   );
 }

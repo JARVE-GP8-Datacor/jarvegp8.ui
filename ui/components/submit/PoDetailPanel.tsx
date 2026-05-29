@@ -50,9 +50,10 @@ function confMod(score: number): string {
 interface PoDetailPanelProps {
   trackingCode: string;
   onComplete: () => void;
+  onFailed?: () => void;
 }
 
-export function PoDetailPanel({ trackingCode, onComplete }: PoDetailPanelProps) {
+export function PoDetailPanel({ trackingCode, onComplete, onFailed }: PoDetailPanelProps) {
   const [data, setData] = useState<PoStatusData | null>(null);
   const pollRef      = useRef<ReturnType<typeof setInterval> | null>(null);
   const completedRef = useRef(false);
@@ -66,7 +67,11 @@ export function PoDetailPanel({ trackingCode, onComplete }: PoDetailPanelProps) 
       if (!POLLING_STATUSES.has(json.status) && !completedRef.current) {
         completedRef.current = true;
         if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
-        if (json.status !== "FAILED") onComplete();
+        if (json.status === "FAILED") {
+          onFailed?.();
+        } else {
+          onComplete();
+        }
       }
     } catch { /* silent */ }
   }, [trackingCode, onComplete]);

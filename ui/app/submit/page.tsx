@@ -240,9 +240,18 @@ export default function SubmitPage() {
     setExpandedId((prev) => (prev === id ? null : id));
   }, []);
 
-  const handleDetailComplete = useCallback(() => {
+  const handleDetailComplete = useCallback((id: string) => {
+    setSubmissions((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, status: "completed" } : s))
+    );
     if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
     collapseTimerRef.current = setTimeout(() => setExpandedId(null), 5000);
+  }, []);
+
+  const handleDetailFailed = useCallback((id: string) => {
+    setSubmissions((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, status: "failed" } : s))
+    );
   }, []);
 
   const validCount = staged.filter((s) => s.valid).length;
@@ -332,6 +341,7 @@ export default function SubmitPage() {
           expandedId={expandedId}
           onToggleExpand={handleToggleExpand}
           onDetailComplete={handleDetailComplete}
+          onDetailFailed={handleDetailFailed}
         />
       </div>
 

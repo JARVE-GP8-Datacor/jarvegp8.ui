@@ -12,7 +12,8 @@ interface SubmissionQueueProps {
   loading?: boolean;
   expandedId: string | null;
   onToggleExpand: (id: string) => void;
-  onDetailComplete: () => void;
+  onDetailComplete: (id: string) => void;
+  onDetailFailed: (id: string) => void;
 }
 
 export function SubmissionQueue({
@@ -22,6 +23,7 @@ export function SubmissionQueue({
   expandedId,
   onToggleExpand,
   onDetailComplete,
+  onDetailFailed,
 }: SubmissionQueueProps) {
   const total      = submissions.length;
   const inProgress = submissions.filter((s) => s.status === "in-progress").length;
@@ -145,7 +147,8 @@ export function SubmissionQueue({
                       <td colSpan={4}>
                         <PoDetailPanel
                           trackingCode={trackingCode}
-                          onComplete={onDetailComplete}
+                          onComplete={() => onDetailComplete(row.id)}
+                          onFailed={() => onDetailFailed(row.id)}
                         />
                       </td>
                     </tr>

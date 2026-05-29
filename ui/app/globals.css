@@ -2957,3 +2957,45 @@ textarea.field__input {
 @media (max-width: 640px) {
   .po-detail-panel { grid-template-columns: 1fr; }
 }
+
+/* ── PO detail: editable fields ───────────────────────────── */
+.pod-field__input {
+  width: 100%;
+  font-size: 13px;
+  color: var(--portal-text);
+  background: #fff;
+  border: 1px solid var(--portal-border-strong);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.pod-field__input:focus {
+  outline: none;
+  border-color: var(--ds-medium-blue);
+  box-shadow: 0 0 0 3px rgba(36,141,227,0.12);
+}
+.pod-field__input--mono { font-family: var(--cc-font-mono); }
+.pod-party__input { margin-top: 6px; display: block; }
+
+/* Editable cells inside lines table */
+.cell-input {
+  width: 100%;
+  min-width: 60px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: inherit;
+  font-family: inherit;
+  background: transparent;
+  color: inherit;
+  transition: border-color 0.12s, background 0.12s;
+}
+.cell-input:hover { border-color: var(--portal-border-strong); background: #fff; }
+.cell-input:focus { outline: none; border-color: var(--ds-medium-blue); background: #fff; box-shadow: 0 0 0 2px rgba(36,141,227,0.1); }
+.cell-input--num { text-align: right; }
+.cell-input--mono { font-family: var(--cc-font-mono); }
+
+/* Update button highlight when dirty */
+.btn-ghost--highlight { border-color: var(--ds-medium-blue); color: var(--ds-medium-blue); }
+.btn-ghost--highlight:hover { background: #eaf3fd; }
