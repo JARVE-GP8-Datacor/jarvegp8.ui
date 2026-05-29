@@ -8,14 +8,8 @@ import { PoPageHeader } from "@/components/po/PoPageHeader";
 import { EtaStrip } from "@/components/po/EtaStrip";
 import { StageTracker } from "@/components/po/StageTracker";
 import { PO_RECORDS } from "@/lib/po-data";
-import type { CategoryId } from "@/lib/types";
-
 export default function PoTrackingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-
-  const [category, setCategory] = useState<CategoryId>("all");
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [pinnedOnly, setPinnedOnly] = useState(false);
 
   const po = PO_RECORDS[id];
   if (!po) notFound();
@@ -25,16 +19,7 @@ export default function PoTrackingPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="portal">
-      <Header
-        category={category}
-        setCategory={setCategory}
-        filterOpen={filterOpen}
-        setFilterOpen={(fn) => setFilterOpen(fn(filterOpen))}
-        closeFilter={() => setFilterOpen(false)}
-        pinnedOnly={pinnedOnly}
-        setPinnedOnly={setPinnedOnly}
-        showFilter={false}
-      />
+      <Header />
 
       <div className="portal__body">
         <Breadcrumb current={po.id} />

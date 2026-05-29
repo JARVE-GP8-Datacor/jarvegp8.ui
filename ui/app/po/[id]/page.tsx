@@ -101,9 +101,6 @@ function fmtNum(n: number, dec = 2): string {
 export default function PoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
 
-  const [category,     setCategory]     = useState<CategoryId>("all");
-  const [filterOpen,   setFilterOpen]   = useState(false);
-  const [pinnedOnly,   setPinnedOnly]   = useState(false);
   const [data,         setData]         = useState<PoStatusData | null>(null);
   const [fetchError,   setFetchError]   = useState<string | null>(null);
   const [loading,      setLoading]      = useState(true);
@@ -238,17 +235,13 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
   // ── Loading / Error ────────────────────────────────────────────────────
 
   if (loading) return (
-    <Shell category={category} setCategory={setCategory}
-      filterOpen={filterOpen} setFilterOpen={(fn) => setFilterOpen(fn(filterOpen))}
-      closeFilter={() => setFilterOpen(false)} pinnedOnly={pinnedOnly} setPinnedOnly={setPinnedOnly}>
+    <Shell>
       <div className="pod-loading"><div className="pod-spinner" /><p>Loading PO details…</p></div>
     </Shell>
   );
 
   if (fetchError || !data) return (
-    <Shell category={category} setCategory={setCategory}
-      filterOpen={filterOpen} setFilterOpen={(fn) => setFilterOpen(fn(filterOpen))}
-      closeFilter={() => setFilterOpen(false)} pinnedOnly={pinnedOnly} setPinnedOnly={setPinnedOnly}>
+    <Shell>
       <div className="pod-error">
         <AlertCircleIcon size={32} />
         <p>{fetchError ?? "PO not found"}</p>
@@ -262,9 +255,7 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
   const canReprocess = (["FAILED", "PENDING_REVIEW"] as PoStatus[]).includes(data.status);
 
   return (
-    <Shell category={category} setCategory={setCategory}
-      filterOpen={filterOpen} setFilterOpen={(fn) => setFilterOpen(fn(filterOpen))}
-      closeFilter={() => setFilterOpen(false)} pinnedOnly={pinnedOnly} setPinnedOnly={setPinnedOnly}>
+    <Shell>
 
       {/* Breadcrumb */}
       <nav className="crumbs" aria-label="Breadcrumb">
@@ -435,17 +426,11 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
 
 // ── Sub-components ─────────────────────────────────────────────────────────
 
-type ShellProps = {
-  category: CategoryId; setCategory: (c: CategoryId) => void;
-  filterOpen: boolean; setFilterOpen: (fn: (o: boolean) => boolean) => void;
-  closeFilter: () => void;
-  pinnedOnly: boolean; setPinnedOnly: (v: boolean) => void;
-  children: React.ReactNode;
-};
-function Shell({ children, category, setCategory, filterOpen, setFilterOpen, closeFilter, pinnedOnly, setPinnedOnly }: ShellProps) {
+type ShellProps = { children: React.ReactNode };
+function Shell({ children }: ShellProps) {
   return (
     <div className="portal">
-      <Header category={category} setCategory={setCategory} filterOpen={filterOpen} setFilterOpen={setFilterOpen} closeFilter={closeFilter} pinnedOnly={pinnedOnly} setPinnedOnly={setPinnedOnly} showFilter={false} />
+      <Header />
       <div className="portal__body">{children}</div>
     </div>
   );

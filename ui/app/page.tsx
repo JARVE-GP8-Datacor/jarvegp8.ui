@@ -1,28 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Header } from "@/components/Header";
 import { LaunchToast } from "@/components/LaunchToast";
 import { PoTrackSearch } from "@/components/PoTrackSearch";
 import { ProductGrid } from "@/components/ProductGrid";
 import { PRODUCTS } from "@/lib/data";
-import type { CategoryId, Product, ViewMode } from "@/lib/types";
+import type { Product, ViewMode } from "@/lib/types";
 
 export default function PortalPage() {
-  const [category, setCategory] = useState<CategoryId>("all");
-  const [pinnedOnly, setPinnedOnly] = useState(false);
-  const [filterOpen, setFilterOpen] = useState(false);
   const [view, setView] = useState<ViewMode>("grid");
   const [launching, setLaunching] = useState<Product | null>(null);
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
-
-  const filtered = useMemo(() => {
-    return products.filter((p) => {
-      if (category !== "all" && p.category !== category) return false;
-      if (pinnedOnly && !p.pinned) return false;
-      return true;
-    });
-  }, [products, category, pinnedOnly]);
 
   const togglePin = (id: string) => {
     setProducts((prev) =>
@@ -30,31 +19,15 @@ export default function PortalPage() {
     );
   };
 
-  const clearFilters = () => {
-    setCategory("all");
-    setPinnedOnly(false);
-  };
-
   return (
     <div className="portal">
-      <Header
-        category={category}
-        setCategory={setCategory}
-        filterOpen={filterOpen}
-        setFilterOpen={(fn) => setFilterOpen(fn(filterOpen))}
-        closeFilter={() => setFilterOpen(false)}
-        pinnedOnly={pinnedOnly}
-        setPinnedOnly={setPinnedOnly}
-      />
+      <Header />
       <div className="portal__body">
         <PoTrackSearch />
         <ProductGrid
-          products={filtered}
+          products={products}
           view={view}
           setView={setView}
-          category={category}
-          pinnedOnly={pinnedOnly}
-          onClearFilters={clearFilters}
           onLaunch={setLaunching}
           onTogglePin={togglePin}
         />

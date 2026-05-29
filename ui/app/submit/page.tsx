@@ -18,7 +18,6 @@ import {
   type Submission,
   type SubmissionStatus,
 } from "@/lib/submit-types";
-import type { CategoryId } from "@/lib/types";
 
 const PO_API_BASE = "/api/po/";
 const NGROK_HEADERS = {};
@@ -47,10 +46,6 @@ function mapApiSubmission(r: Record<string, unknown>): Submission {
 }
 
 export default function SubmitPage() {
-  const [category, setCategory] = useState<CategoryId>("all");
-  const [filterOpen, setFilterOpen] = useState(false);
-  const [pinnedOnly, setPinnedOnly] = useState(false);
-
   const [projectCode, setProjectCode] = useState<string | null>(null);
   const [staged, setStaged] = useState<StagedFile[]>([]);
   const [pendingFile, setPendingFile] = useState<StagedFile | null>(null);
@@ -282,16 +277,7 @@ export default function SubmitPage() {
 
   return (
     <div className="portal">
-      <Header
-        category={category}
-        setCategory={setCategory}
-        filterOpen={filterOpen}
-        setFilterOpen={(fn) => setFilterOpen(fn(filterOpen))}
-        closeFilter={() => setFilterOpen(false)}
-        pinnedOnly={pinnedOnly}
-        setPinnedOnly={setPinnedOnly}
-        showFilter={false}
-      />
+      <Header />
 
       <div className="portal__body">
         <ProductContext />
