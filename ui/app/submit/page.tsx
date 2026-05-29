@@ -205,7 +205,7 @@ export default function SubmitPage() {
           try {
             const json = await res.json();
             const poId = String(
-              json.po_id ?? json._id ?? json.id ?? json.tracking_code ?? ""
+              json.tracking_code ?? json.po_id ?? json._id ?? json.id ?? ""
             );
             if (poId) {
               // update the row id to the real tracking code and keep panel open
