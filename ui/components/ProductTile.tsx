@@ -18,7 +18,7 @@ export function ProductTile({ product, onTogglePin }: ProductTileProps) {
   const cat = CATEGORIES.find((c) => c.id === product.category);
 
   return (
-    <article className="tile tile--color tile--chevron" onClick={() => router.push(`/submit?project_code=${product.project_code ?? product.id}`)}>
+    <article className="tile tile--color tile--chevron" onClick={() => router.push(product.project_code ? `/submit?project_code=${product.project_code}` : `/submit`)}>
       <svg className="tile__chev" viewBox="0 0 120 120" aria-hidden="true">
         <polygon points="60,0 120,0 90,30 30,60 90,90 120,120 60,120 0,60" fill="currentColor" />
       </svg>
