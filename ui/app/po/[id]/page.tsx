@@ -329,10 +329,10 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
             </header>
             <div className="pod-field-grid">
               <PodField label="PO Number"     value={editedPayload.header.po_number}     mono onChange={(v) => setHeader("po_number", v)} />
-              <PodField label="Issue Date"    value={editedPayload.header.issue_date}         onChange={(v) => setHeader("issue_date", v)} />
+              <PodField label="Issue Date"    value={editedPayload.header.issue_date}    type="date" onChange={(v) => setHeader("issue_date", v)} />
               <PodField label="Currency"      value={editedPayload.header.currency}           onChange={(v) => setHeader("currency", v)} />
               <PodField label="Payment Terms" value={editedPayload.header.payment_terms}      onChange={(v) => setHeader("payment_terms", v)} />
-              <PodField label="Delivery Date" value={editedPayload.header.delivery_date}      onChange={(v) => setHeader("delivery_date", v)} />
+              <PodField label="Delivery Date" value={editedPayload.header.delivery_date} type="date" onChange={(v) => setHeader("delivery_date", v)} />
             </div>
           </div>
 
@@ -453,14 +453,15 @@ function Shell({ children, ...hp }: ShellProps) {
   );
 }
 
-function PodField({ label, value, mono = false, onChange }: {
-  label: string; value: string; mono?: boolean; onChange?: (v: string) => void;
+function PodField({ label, value, mono = false, type = "text", onChange }: {
+  label: string; value: string; mono?: boolean; type?: string; onChange?: (v: string) => void;
 }) {
   return (
     <div className="pod-field">
       <div className="pod-field__label">{label}</div>
       {onChange ? (
         <input
+          type={type}
           className={`pod-field__input${mono ? " pod-field__input--mono" : ""}`}
           value={value ?? ""}
           onChange={(e) => onChange(e.target.value)}
