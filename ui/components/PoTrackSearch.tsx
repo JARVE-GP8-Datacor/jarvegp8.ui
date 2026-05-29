@@ -3,29 +3,38 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { AlertCircleIcon, HashIcon, SearchIcon, XIcon } from "./Icon";
-import { PO_RECORDS } from "@/lib/po-data";
 
 export function PoTrackSearch() {
   const router = useRouter();
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const id = value.trim().toUpperCase();
     if (!id) {
       setError("Enter a tracking ID to search.");
       return;
     }
-    if (id.length !== 11) {
-      setError("Tracking IDs are exactly 11 characters. Check and try again.");
-      return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch(`/api/po/${encodeURIComponent(id)}/status`);
+      if (res.ok) {
+        router.push(`/po/${encodeURIComponent(id)}`);
+      } else if (res.status === 404) {
+        setError("No order found with that ID.");
+      } else {
+        setError(`Error looking up order (${res.status}).`);
+      }
+    } catch {
+      setError("Network error. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-    if (!PO_RECORDS[id]) {
-      setError("No order found with that ID.");
-      return;
-    }
-    router.push(`/orders/${id}`);
   };
 
   return (
@@ -41,8 +50,7 @@ export function PoTrackSearch() {
         <div className="track-card__kicker">Track an order</div>
         <div className="track-card__title">Look up a PO by tracking ID</div>
         <div className="track-card__hint">
-          Enter your 10-character tracking ID — e.g.{" "}
-          <code>XXXXXXXXXX</code>
+          Enter your tracking ID — e.g. <code>PO-XXXXXXXX</code>
         </div>
       </div>
 
@@ -61,7 +69,7 @@ export function PoTrackSearch() {
               setValue(e.target.value);
               if (error) setError("");
             }}
-            placeholder="XXXXXXXXXX"
+            placeholder="PO-XXXXXXXX"
             aria-label="Tracking ID"
             aria-invalid={error ? "true" : "false"}
             spellCheck={false}
@@ -81,9 +89,9 @@ export function PoTrackSearch() {
             </button>
           )}
         </div>
-        <button type="submit" className="btn-primary btn-primary--lg">
+        <button type="submit" className="btn-primary btn-primary--lg" disabled={loading}>
           <SearchIcon size={15} />
-          Search
+          {loading ? "Searching…" : "Search"}
         </button>
 
         {error && (
