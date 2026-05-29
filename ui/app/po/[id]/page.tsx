@@ -378,16 +378,16 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
                         <input className="cell-input cell-input--mono" value={item.sku ?? ""} onChange={(e) => setLineField(item.line_number, "sku", e.target.value)} />
                       </td>
                       <td className="num">
-                        <input className="cell-input cell-input--num" type="number" value={item.quantity} onChange={(e) => setLineField(item.line_number, "quantity", e.target.value)} />
+                        <input className="cell-input cell-input--num" type="number" value={item.quantity} onChange={(e) => setLineField(item.line_number, "quantity", e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
                       </td>
                       <td>
                         <input className="cell-input" value={item.unit} onChange={(e) => setLineField(item.line_number, "unit", e.target.value)} />
                       </td>
                       <td className="num">
-                        <input className="cell-input cell-input--num" type="number" value={item.unit_price} onChange={(e) => setLineField(item.line_number, "unit_price", e.target.value)} />
+                        <input className="cell-input cell-input--num" type="number" value={item.unit_price} onChange={(e) => setLineField(item.line_number, "unit_price", e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
                       </td>
                       <td className="num">
-                        <input className="cell-input cell-input--num" type="number" value={item.total} onChange={(e) => setLineField(item.line_number, "total", e.target.value)} />
+                        <input className="cell-input cell-input--num" type="number" value={item.total} onChange={(e) => setLineField(item.line_number, "total", e.target.value)} onWheel={(e) => e.currentTarget.blur()} />
                       </td>
                     </tr>
                   ))}
