@@ -1,6 +1,6 @@
 # JARVE GP3 UI — Architecture
 
-> Generated: 2026-05-26
+> Updated: 2026-05-29
 
 ---
 
@@ -9,9 +9,10 @@
 | Route | File | Layout | Description |
 |---|---|---|---|
 | `/` | `app/page.tsx` | Root (`app/layout.tsx`) | Portal: Header + PoTrackSearch + ProductGrid |
-| `/submit?product=<id>` | `app/submit/page.tsx` | Root | File upload + submission queue with auto-refresh |
-| `/orders/[id]` | `app/orders/[id]/page.tsx` | Root | PO tracking detail (read-only) |
-| `/po-form?id=<code>&file=<name>` | `app/po-form/page.tsx` | Standalone (`app/po-form/layout.tsx`) | PO review form — opened as popup |
+| `/submit?project_code=<code>` | `app/submit/page.tsx` | Root | File upload + submission queue with inline PoDetailPanel |
+| `/orders/[id]` | `app/orders/[id]/page.tsx` | Root | PO tracking timeline — loads real data from `/api/po/{id}/status` |
+| `/po/[id]` | `app/po/[id]/page.tsx` | Root | Full PO detail + inline editing (single scrollable view) |
+| `/po-form?id=<tracking_code>` | `app/po-form/page.tsx` | Standalone (`app/po-form/layout.tsx`) | PO review form — opened as popup |
 
 ---
 
@@ -21,15 +22,23 @@
 
 | Component | File | Purpose |
 |---|---|---|
-| `Header` | `components/Header.tsx` | Top bar; JARVE GP3 wordmark links to `/` |
-| `DatacorWordmark` | `components/DatacorWordmark.tsx` | Logo text — NOT a link itself (Link wrapper is in Header) |
-| `ProductGrid` | `components/ProductGrid.tsx` | Grid / list view switcher for product catalog |
-| `ProductTile` | `components/ProductTile.tsx` | Card view — navigates to `/submit?product=<id>` |
+| `Header` | `components/Header.tsx` | Top bar — logo + "JARVE Portal" + link to `/`. No props, no search, no filter. |
+| `DatacorWordmark` | `components/DatacorWordmark.tsx` | Logo SVG — NOT a link itself (Link wrapper is in Header) |
+| `ProductGrid` | `components/ProductGrid.tsx` | Grid / list view switcher; no filter or search props |
+| `ProductTile` | `components/ProductTile.tsx` | Card view — `router.push('/submit?project_code=<code>')` |
 | `ProductRow` | `components/ProductRow.tsx` | List-row view — same navigation |
-| `PoTrackSearch` | `components/PoTrackSearch.tsx` | 10-character tracking ID input → `/orders/<id>` |
-| `FilterMenu` | `components/FilterMenu.tsx` | Category filter dropdown |
-| `Icon` | `components/Icon.tsx` | All SVG icons (HashIcon, AlertCircleIcon, CheckIcon, …) |
+| `PoTrackSearch` | `components/PoTrackSearch.tsx` | Tracking ID input → calls `GET /api/po/{id}/status` → navigates to `/orders/{id}` |
+| `Icon` | `components/Icon.tsx` | All SVG icons |
 | `LaunchToast` | `components/LaunchToast.tsx` | Transient notification toast |
+
+### PO tracking page (`components/po/`)
+
+| Component | Purpose |
+|---|---|
+| `Breadcrumb` | Portal / Orders / {tracking_code} |
+| `PoPageHeader` | PO number + status pill + vendor + amount + dates |
+| `EtaStrip` | "Expected next step" banner |
+| `StageTracker` | 5-stage tracker: PO Received → Under Review → Processing → Invoiced → Completed (Paid) |
 
 ### Submit page (`components/submit/`)
 
@@ -37,8 +46,9 @@
 |---|---|
 | `Dropzone` | Single-file drag-and-drop area (no `multiple` attribute) |
 | `StagedList` | Shows the one staged file with validation status |
-| `SubmissionQueue` | Polling table — loads from `GET /api/po`, auto-refreshes every 5 s when `?product=` is present |
-| `ProductContext` | Banner showing selected product logo/name; reads `?product=` via `useSearchParams()` wrapped in `<Suspense>` |
+| `SubmissionQueue` | Queue table — loads `GET /api/po?project_code=<code>`, polling every 5 s; uses `<React.Fragment key>` for key safety |
+| `PoDetailPanel` | Inline expand panel — AI Agent Progress + Confidence score; polls `/api/po/{id}/status` every 2 s while `RECEIVED` or `INTERPRETING` |
+| `ProductContext` | Banner showing selected product logo/name; reads `?project_code=` via `useSearchParams()` in `<Suspense>` |
 
 ### PO Form popup (`components/po-form/`)
 
@@ -46,7 +56,7 @@
 |---|---|
 | `PoFormHeader` | Sticky popup header with Print / Close actions |
 | `FormField` | Labeled text input and textarea |
-| `LineItemsTable` | Editable line items — auto-calculates Extended = Qty × Unit Price |
+| `LineItemsTable` | Editable line items |
 | `AppliedChargesTable` | Applied charges section |
 | `UdfsTable` | User-defined fields section |
 
@@ -56,12 +66,12 @@
 
 | File | Exports | Notes |
 |---|---|---|
-| `types.ts` | `Product`, `Category`, `LogoId`, `ViewMode`, `ProductStatus` | Core domain types |
-| `data.ts` | `PRODUCTS`, `CATEGORIES`, `LOGOS` | Static catalog data |
+| `types.ts` | `Product`, `Category`, `LogoId`, `ViewMode`, `ProductStatus` | `Product` includes `project_code?: string` |
+| `data.ts` | `PRODUCTS`, `CATEGORIES`, `LOGOS` | All 4 products have `project_code` |
 | `submit-types.ts` | `StagedFile`, `Submission`, `SubmissionStatus`, utilities | Also exports `uid()`, `getExt()`, `fmtBytes()`, `relativeTime()` |
 | `po-form-data.ts` | `PoFormData`, `PoLineItem`, `mockPoFromSubmissionId()`, `formatCurrency()` | PO form types + fallback mock |
-| `po-data.ts` | `PO_RECORDS`, `DEFAULT_PO_ID` | Legacy mock records — key format is 10 chars (e.g. `PO-2026-01`) |
-| `po-types.ts` | PO tracking types | Used by orders detail page |
+| `po-data.ts` | `PO_RECORDS` | Legacy mock records (no longer used for navigation) |
+| `po-types.ts` | `PoSummary`, `PoStage`, `PoStageState` | Used by orders tracking page |
 
 ---
 
@@ -72,52 +82,63 @@ User drops file
     └─ Dropzone → addFile()
            └─ if staged empty: setStaged([entry])
               if staged has file: setPendingFile(entry) → show replace modal
-                  └─ Confirm → setStaged([pending]), clear pendingFile
-                  └─ Cancel  → clear pendingFile (discard new)
 
 User clicks Submit
     └─ submit()
-           ├─ setStaged([])                   — clear immediately (optimistic)
-           ├─ add in-progress row             — prepend to submissions state
-           └─ POST /api/po/upload (FormData)
-                  ├─ ok  → update row status → "completed"
-                  └─ err → update row status → "failed"
+           ├─ POST /api/po/upload?project_code=<code>   — file as FormData binary
+           └─ upload response: extract poId with priority tracking_code → po_id → _id → id
+                  └─ open PoDetailPanel inline on that row automatically
 
-Auto-refresh (when ?product= present)
+Auto-refresh (when ?project_code= present)
     └─ setInterval(fetchQueue, 5000)
-           └─ GET /api/po
-                  └─ merge:
-                       existing rows → update status if changed
-                       new rows      → prepend to top
+           └─ GET /api/po?project_code=<code>
+                  └─ merge: update existing rows, prepend new rows
+                     ID match uses same priority: tracking_code → po_id → _id → id
 ```
+
+---
+
+## Data flow — Orders / Tracking page
+
+```
+Navigate to /orders/[id]
+    └─ fetch GET /api/po/{id}/status (single load)
+           └─ buildSummary(id, apiResponse)
+                  └─ maps status → stage index (0–4)
+                     maps seller.name → vendor
+                     maps sum(line_items.total) → amount
+                     maps project_code → PRODUCTS lookup → project banner
+```
+
+### Status → stage mapping
+
+| API status | Stage index | Label |
+|---|---|---|
+| `RECEIVED` / `INTERPRETING` | 0 | PO Received |
+| `AUTO_APPROVED` / `PENDING_REVIEW` / `REVIEWING` | 1 | Under Review |
+| `APPROVED` / `PUSHING` | 2 | Processing |
+| `PUSHED` | 3 | Invoiced |
+| (stage 4) | 4 | Completed (Paid) |
 
 ---
 
 ## Data flow — PO Form popup
 
 ```
-Submission queue row (status=completed) → "View PO" button
-    └─ window.open('/po-form?id=<tracking_code>&file=<name>',
-                   'po-form-<id>',
-                   'width=1240,height=900')
+Submission queue row → "View PO" button (hidden on failed rows)
+    └─ <Link href="/po/{id}">
 
-po-form/page.tsx mounts
-    └─ GET /api/po/<tracking_code>
-           ├─ ok  → mapApiToForm() → populate all fields
-           └─ err → mockPoFromSubmissionId(id)  (silent fallback)
+/po/[id] mounts
+    └─ GET /api/po/{id}/status
+           └─ populate all editable fields (header, parties, line_items, project_specific)
 
-User edits fields (all editable in real time)
+User edits fields → isDirty = true → "Update" button highlighted
+
+Update PO
+    └─ PATCH /api/po/{id}  with normalized_payload
 
 Submit PO
-    └─ resolution = "approved"
-       status pill → "Approved" (green)
-       footer → success message
-       buttons → only "Close"
-
-Discard & Close
-    └─ resolution = "discarded"
-       status pill → "Discarded" (red)
-       window closes after 900 ms
+    └─ POST /api/po/{id}/approve
 ```
 
 ---
@@ -126,54 +147,51 @@ Discard & Close
 
 | Trigger | Destination | Notes |
 |---|---|---|
-| Product tile / row click | `/submit?product=<id>` | `router.push()` |
-| Tracking ID search (10 chars) | `/orders/<id>` | Validated client-side before navigation |
-| JARVE GP3 wordmark | `/` | `<Link href="/">` wrapper in `Header.tsx` |
-| "View PO" button | `/po-form?id=...&file=...` | `window.open()` — named popup, reuses same window per PO ID |
-| "Change product" in ProductContext | `/` | `<Link href="/">` |
+| Product tile / row click | `/submit?project_code=<code>` | `router.push()` |
+| Tracking ID search | `/orders/<id>` | Calls API to validate; navigates on 200 |
+| JARVE Portal wordmark / text | `/` | `<Link href="/">` in `Header.tsx` |
+| "View PO" button | `/po/<id>` | Hidden when submission status = failed |
+| "Submit another PO →" on tracking page | `/submit?project_code=<code>` | Derived from `project_code` in API response |
 
 ---
 
 ## Product catalog
 
-| id | Name | Category | Logo file |
+| id | Name | project_code | Logo file |
 |---|---|---|---|
-| `erp` | Datacor ERP | distribution | `datacor-erp.png` |
-| `feedmill` | Feed Mill Manager | production | `feed-mill-manager.jpg` |
-| `pennentmill` | Pennent Mill Manager | production | `pennent-mill-manager.jpg` |
-| `salesforce` | Salesforce | customer | `salesforce.png` |
+| `erp` | Datacor ERP | `erp` | `datacor-erp.png` |
+| `feedmill` | Feed Mill Manager | `fmm` | `feed-mill-manager.jpg` |
+| `pennentmill` | Pennent Mill Manager | `pmm` | `pennent-mill-manager.jpg` |
+| `salesforce` | Salesforce | `salesforce` | `salesforce.png` |
 
 ---
 
-## Tracking ID rules
+## Tracking ID format
 
 | Rule | Value |
 |---|---|
-| Exact length | 10 characters |
-| Input placeholder | `XXXXXXXXXX` |
-| Hint text | `Enter your 10-character tracking ID — e.g. XXXXXXXXXX` |
-| Validation error | `Tracking IDs are exactly 10 characters.` |
+| Format | `PO-XXXXXXXX` (8 hex chars after prefix) |
+| Example | `PO-86D5F616` |
+| Length | 11 characters |
+| Validation | None client-side — API call validates existence |
 
 ---
 
-## CSS conventions (`app/globals.css`)
+## CSS conventions (selected classes)
 
 | Class | Purpose |
 |---|---|
-| `.track-card` | `display:flex; flex-wrap:wrap` — responsive PO search card |
-| `.track-card__copy` | `flex:1 1 220px` — copy column |
-| `.track-form` | `flex:1 1 300px` — input column |
-| `.track-input` | `flex:1 1 180px; min-width:0` — tracking ID input |
-| `.track-error` | Error message row (`flex-basis:100%`) |
-| `.submit-product` | Product context banner on submit page |
-| `.replace-overlay / .replace-modal` | File-replacement confirmation dialog |
-| `.queue-view-btn` | "View PO" button — only visible on `completed` rows |
+| `.queue-row--expandable` | Clickable queue row |
+| `.queue-detail-row` | Expanded inline PoDetailPanel row |
+| `.po-detail-panel` | Inline AI progress + confidence panel |
+| `.agent-tl--compact / .agent-step--done/active/pending` | AI timeline |
+| `.pod-conf-hero--compact / .pod-conf-score / .pod-conf-pct` | Confidence display |
+| `.pod-field__input / .pod-field__input--mono` | Editable inputs in `/po/[id]` |
+| `.cell-input / .cell-input--num / .cell-input--mono` | Table line item inputs |
+| `.cell-readonly` | Total column (read-only, right-aligned) |
+| `.btn-ghost--highlight` | "Update" button when `isDirty=true` |
+| `.po-project-banner` | Project name + "Submit another PO" link on tracking page |
 | `.qstatus--inprogress/completed/failed` | Submission queue status pills |
-| `.popup-header` | Sticky header for PO form popup |
-| `.form-body / .form-section / .form-grid` | PO form layout grid |
-| `.lines-table / .compact-table` | Editable tables inside PO form |
-| `.form-footer` | Sticky footer inside PO form |
-| `.status-pill--discarded` | Red pill for discarded PO (`#fde8e8 / #9b1c1c`) |
 
 ---
 
@@ -181,13 +199,12 @@ Discard & Close
 
 | Decision | Reason |
 |---|---|
-| Next.js API routes as CORS proxy | Browser cannot call ngrok directly (CORS blocked); server-side fetch has no restriction |
-| `flex-wrap` on `.track-card` instead of CSS Grid | Grid `minmax(0,1fr) auto` collapsed copy text at intermediate viewport widths |
-| `window.open()` for PO Form | Full standalone screen; named target reuses the same popup window per PO ID |
-| `useSearchParams()` in `<Suspense>` for ProductContext | Required by Next.js 15+ — component using hook must be inside a Suspense boundary |
-| Submit page reads `?product=` in `useEffect` (not `useSearchParams`) | Avoids adding another Suspense boundary at the page level |
-| `fileRef?: File` on `StagedFile` | Stores actual File object in React state so upload can read binary; not serialized anywhere |
-| `file` FormData field = filename string, not binary | Backend stores files separately; only the name is passed in the upload request |
-| `tracking_code` as primary ID for submissions | Stable across page reloads; `_id` is the fallback. Using `uid()` caused IDs to change on every fetch |
-| Auto-refresh only when `?product=` is present | Without a product context there is no active submission session; polling would waste requests |
-| Single file at a time in Dropzone | Product constraint; adding a second file shows a "Replace?" confirmation modal |
+| Next.js API routes as CORS proxy | Browser cannot call ngrok directly; server-side fetch has no restriction |
+| `project_code` as URL query param | Backend requires it server-side on upload and list; not form body |
+| `projectCodeRef` on submit page | Ensures `fetchQueue` closure always reads current value without stale ref |
+| `useSearchParams()` in `<Suspense>` for ProductContext | Required by Next.js 15+ |
+| `<React.Fragment key={row.id}>` in SubmissionQueue | `<>` shorthand does not accept `key` prop |
+| `value ?? ""` on all PO inputs | Backend can return `null` for optional fields; null triggers React warning |
+| `onWheel blur` on number inputs | Prevents scroll wheel from changing Qty / Unit Price values |
+| `tracking_code` priority in ID extraction | Stable ID; avoids duplicate rows when API returns `_id` (MongoDB ObjectId) alongside `tracking_code` |
+| Single file at a time in Dropzone | Product constraint; adding a second file shows "Replace?" confirmation modal |

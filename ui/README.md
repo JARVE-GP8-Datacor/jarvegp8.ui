@@ -2,7 +2,7 @@
 
 > Next.js portal for submitting and tracking Purchase Orders across Datacor product lines.  
 > Stack: Next.js 16.2.6 · React 19 · TypeScript (strict) · Turbopack  
-> Generated: 2026-05-26
+> Updated: 2026-05-29
 
 ---
 
@@ -11,9 +11,10 @@
 | Screen | Path | Purpose |
 |---|---|---|
 | Portal home | `/` | Product catalog with PO tracking search |
-| Submit | `/submit?product=<id>` | Upload a PO file for a specific product |
-| Order detail | `/orders/[id]` | Read-only PO tracking timeline |
-| PO Form | `/po-form?id=<tracking_code>&file=<name>` | Full PO review / approval form (popup) |
+| Submit | `/submit?project_code=<code>` | Upload a PO file for a specific product |
+| Order detail | `/orders/[id]` | Real-time PO tracking timeline (loads from API) |
+| PO detail / edit | `/po/[id]` | Full PO review and inline editing (single scrollable view) |
+| PO Form | `/po-form?id=<tracking_code>` | PO review popup (standalone window) |
 
 ---
 
@@ -54,9 +55,10 @@ ui/
 ├── app/                  Next.js App Router
 │   ├── page.tsx          Portal home
 │   ├── layout.tsx        Root layout (title, fonts)
-│   ├── globals.css       All styles (~2 300 lines)
+│   ├── globals.css       All styles (~3 000+ lines)
 │   ├── tokens.css        Design tokens
-│   ├── orders/[id]/      PO tracking detail
+│   ├── orders/[id]/      PO tracking timeline (real API data)
+│   ├── po/[id]/          PO detail + inline editing
 │   ├── po-form/          PO review popup (standalone layout)
 │   ├── submit/           File upload + submission queue
 │   └── api/po/           Next.js proxy routes (CORS bridge)
@@ -83,7 +85,7 @@ cp .env.example .env.local
 | `UPSTREAM_API` | yes | Full URL of the backend PO endpoint, no trailing slash (e.g. `https://your-host.ngrok-free.app/api/po`) |
 
 `.env.local` is gitignored. Never commit it.  
-All three proxy route handlers (`app/api/po/`) read `process.env.UPSTREAM_API` at runtime; they fall back to the default ngrok URL if the variable is absent.
+All proxy route handlers (`app/api/po/`) read `process.env.UPSTREAM_API` at runtime.
 
 ---
 
