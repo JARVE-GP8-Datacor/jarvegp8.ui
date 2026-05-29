@@ -10,7 +10,6 @@ interface ProductGridProps {
   products: Product[];
   view: ViewMode;
   setView: (v: ViewMode) => void;
-  query: string;
   category: CategoryId;
   pinnedOnly: boolean;
   onClearFilters: () => void;
@@ -22,7 +21,6 @@ export function ProductGrid({
   products,
   view,
   setView,
-  query,
   category,
   pinnedOnly,
   onClearFilters,
@@ -31,7 +29,7 @@ export function ProductGrid({
 }: ProductGridProps) {
   const pinned = products.filter((p) => p.pinned);
   const others = products.filter((p) => !p.pinned);
-  const hasActiveFilters = Boolean(query) || category !== "all" || pinnedOnly;
+  const hasActiveFilters = category !== "all" || pinnedOnly;
 
   return (
     <main className="grid-area">
@@ -70,7 +68,7 @@ export function ProductGrid({
       {products.length === 0 && (
         <div className="empty">
           <div className="empty__title">No applications match</div>
-          <p>Try a different search term or clear filters.</p>
+          <p>Try clearing the active filters.</p>
           <button className="btn-primary" onClick={onClearFilters}>
             Clear filters
           </button>

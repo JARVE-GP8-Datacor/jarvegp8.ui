@@ -9,7 +9,6 @@ import { PRODUCTS } from "@/lib/data";
 import type { CategoryId, Product, ViewMode } from "@/lib/types";
 
 export default function PortalPage() {
-  const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CategoryId>("all");
   const [pinnedOnly, setPinnedOnly] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -18,17 +17,12 @@ export default function PortalPage() {
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
     return products.filter((p) => {
       if (category !== "all" && p.category !== category) return false;
       if (pinnedOnly && !p.pinned) return false;
-      if (q) {
-        const hay = `${p.name} ${p.tagline} ${p.category}`.toLowerCase();
-        if (!hay.includes(q)) return false;
-      }
       return true;
     });
-  }, [products, query, category, pinnedOnly]);
+  }, [products, category, pinnedOnly]);
 
   const togglePin = (id: string) => {
     setProducts((prev) =>
@@ -37,7 +31,6 @@ export default function PortalPage() {
   };
 
   const clearFilters = () => {
-    setQuery("");
     setCategory("all");
     setPinnedOnly(false);
   };
@@ -45,8 +38,6 @@ export default function PortalPage() {
   return (
     <div className="portal">
       <Header
-        query={query}
-        setQuery={setQuery}
         category={category}
         setCategory={setCategory}
         filterOpen={filterOpen}
@@ -61,7 +52,6 @@ export default function PortalPage() {
           products={filtered}
           view={view}
           setView={setView}
-          query={query}
           category={category}
           pinnedOnly={pinnedOnly}
           onClearFilters={clearFilters}

@@ -2,13 +2,11 @@
 
 import Link from "next/link";
 import type { CategoryId } from "@/lib/types";
-import { ChevronIcon, FilterIcon, SearchIcon, XIcon } from "./Icon";
+import { ChevronIcon, FilterIcon } from "./Icon";
 import { DatacorWordmark } from "./DatacorWordmark";
 import { FilterMenu } from "./FilterMenu";
 
 interface HeaderProps {
-  query: string;
-  setQuery: (q: string) => void;
   category: CategoryId;
   setCategory: (c: CategoryId) => void;
   filterOpen: boolean;
@@ -17,12 +15,9 @@ interface HeaderProps {
   pinnedOnly: boolean;
   setPinnedOnly: (v: boolean) => void;
   showFilter?: boolean;
-  showSearch?: boolean;
 }
 
 export function Header({
-  query,
-  setQuery,
   category,
   setCategory,
   filterOpen,
@@ -31,7 +26,6 @@ export function Header({
   pinnedOnly,
   setPinnedOnly,
   showFilter = true,
-  showSearch = true,
 }: HeaderProps) {
   const filterCount = (category !== "all" ? 1 : 0) + (pinnedOnly ? 1 : 0);
 
@@ -44,29 +38,6 @@ export function Header({
         <span className="portal-header__divider" />
         <span className="portal-header__product">JARVE Portal</span>
       </div>
-
-      {showSearch && (
-        <div className="portal-header__search">
-          <SearchIcon size={18} />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search applications, documents, support…"
-            aria-label="Search"
-          />
-          {query && (
-            <button
-              className="portal-header__search-clear"
-              onClick={() => setQuery("")}
-              aria-label="Clear"
-            >
-              <XIcon />
-            </button>
-          )}
-          <kbd className="portal-header__kbd">⌘K</kbd>
-        </div>
-      )}
 
       <div className="portal-header__right">
         {showFilter && (

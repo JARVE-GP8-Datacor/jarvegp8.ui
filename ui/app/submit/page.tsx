@@ -47,7 +47,6 @@ function mapApiSubmission(r: Record<string, unknown>): Submission {
 }
 
 export default function SubmitPage() {
-  const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CategoryId>("all");
   const [filterOpen, setFilterOpen] = useState(false);
   const [pinnedOnly, setPinnedOnly] = useState(false);
@@ -284,8 +283,6 @@ export default function SubmitPage() {
   return (
     <div className="portal">
       <Header
-        query={query}
-        setQuery={setQuery}
         category={category}
         setCategory={setCategory}
         filterOpen={filterOpen}
@@ -294,7 +291,6 @@ export default function SubmitPage() {
         pinnedOnly={pinnedOnly}
         setPinnedOnly={setPinnedOnly}
         showFilter={false}
-        showSearch={false}
       />
 
       <div className="portal__body">

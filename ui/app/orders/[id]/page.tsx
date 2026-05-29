@@ -13,7 +13,6 @@ import type { CategoryId } from "@/lib/types";
 export default function PoTrackingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
 
-  const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CategoryId>("all");
   const [filterOpen, setFilterOpen] = useState(false);
   const [pinnedOnly, setPinnedOnly] = useState(false);
@@ -27,8 +26,6 @@ export default function PoTrackingPage({ params }: { params: Promise<{ id: strin
   return (
     <div className="portal">
       <Header
-        query={query}
-        setQuery={setQuery}
         category={category}
         setCategory={setCategory}
         filterOpen={filterOpen}
