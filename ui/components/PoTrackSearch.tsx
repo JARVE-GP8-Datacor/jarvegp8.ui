@@ -24,7 +24,7 @@ export function PoTrackSearch() {
     try {
       const res = await fetch(`/api/po/${encodeURIComponent(id)}/status`);
       if (res.ok) {
-        router.push(`/po/${encodeURIComponent(id)}`);
+        router.push(`/orders/${encodeURIComponent(id)}`);
       } else if (res.status === 404) {
         setError("No order found with that ID.");
       } else {
