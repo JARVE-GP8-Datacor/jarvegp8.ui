@@ -43,6 +43,7 @@ export interface Submission {
   ext: string;
   status: SubmissionStatus;
   submittedAt: number;
+  poId?: string; // real backend tracking code, set once upload returns it
 }
 
 export function isAccepted(ext: string): ext is AcceptedExt {

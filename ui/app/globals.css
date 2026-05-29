@@ -2874,3 +2874,86 @@ textarea.field__input {
     font-size: 11.5px;
   }
 }
+
+/* ── Submit queue: expandable detail rows ─────────────────── */
+.queue-row--expandable { cursor: pointer; user-select: none; }
+.queue-row--expandable:hover td { background: #f5f8fd; }
+.queue-row--expandable td.col-action { cursor: default; }
+.queue-id-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.queue-toggle {
+  display: inline-flex;
+  align-items: center;
+  color: var(--portal-text-faint);
+  flex-shrink: 0;
+}
+.queue-detail-row td {
+  padding: 0;
+  border-top: none;
+}
+
+/* ── Inline PO detail panel ───────────────────────────────── */
+.po-detail-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 32px;
+  padding: 20px 24px 24px 24px;
+  background: #f8f9fb;
+  border-top: 1px solid var(--portal-border);
+}
+.po-detail-panel__section { min-width: 0; }
+.po-detail-panel__heading {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--portal-text-faint);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.po-detail-panel__waiting {
+  font-size: 12.5px;
+  color: var(--portal-text-faint);
+  margin: 0;
+}
+
+/* Compact agent timeline (inside inline panel) */
+.agent-tl--compact .agent-step {
+  grid-template-columns: 24px 1fr;
+  gap: 0 10px;
+  padding-bottom: 14px;
+}
+.agent-tl--compact .agent-step::before {
+  left: 11px;
+  top: 24px;
+  bottom: 4px;
+}
+.agent-tl--compact .agent-step__node {
+  width: 24px;
+  height: 24px;
+}
+.agent-tl--compact .agent-step__body { padding: 2px 0 0; }
+.agent-tl--compact .agent-step__label { font-size: 12.5px; }
+.agent-tl--compact .agent-step__summary { font-size: 12px; margin-top: 2px; }
+.agent-tl--compact .agent-step__num { font-size: 11px; }
+.agent-tl--compact .agent-step__spinner { width: 10px; height: 10px; border-width: 2px; }
+
+/* Compact confidence block */
+.pod-conf-hero--compact {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  margin-bottom: 10px;
+}
+.pod-conf-hero--compact .pod-conf-score { font-size: 36px; }
+.pod-conf-hero--compact .pod-conf-pct   { font-size: 22px; }
+
+@media (max-width: 640px) {
+  .po-detail-panel { grid-template-columns: 1fr; }
+}

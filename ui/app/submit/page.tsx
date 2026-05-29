@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { PaperclipIcon, SendIcon } from "@/components/Icon";
@@ -48,7 +47,6 @@ function mapApiSubmission(r: Record<string, unknown>): Submission {
 }
 
 export default function SubmitPage() {
-  const router = useRouter();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<CategoryId>("all");
   const [filterOpen, setFilterOpen] = useState(false);
@@ -61,8 +59,10 @@ export default function SubmitPage() {
   const [queueLoading, setQueueLoading] = useState(true);
   const [freshIds, setFreshIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState("");
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const seqRef = useRef(1);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const collapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const completionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
@@ -108,6 +108,7 @@ export default function SubmitPage() {
   useEffect(() => {
     return () => {
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
       completionTimersRef.current.forEach((t) => clearTimeout(t));
     };
   }, []);
@@ -184,6 +185,7 @@ export default function SubmitPage() {
     const clearHighlight = setTimeout(() => setFreshIds(new Set()), 500);
     completionTimersRef.current.push(clearHighlight);
     setStaged([]);
+    setExpandedId(subId);
     showToast("File submitted — uploading…");
 
     const body = new FormData();
@@ -206,7 +208,11 @@ export default function SubmitPage() {
               json.po_id ?? json._id ?? json.id ?? json.tracking_code ?? ""
             );
             if (poId) {
-              router.push(`/po/${encodeURIComponent(poId)}`);
+              // update the row id to the real tracking code and keep panel open
+              setSubmissions((prev) =>
+                prev.map((s) => (s.id === subId ? { ...s, id: poId, poId } : s))
+              );
+              setExpandedId(poId);
               return;
             }
           } catch { /* fall through if JSON parse fails */ }
@@ -228,6 +234,16 @@ export default function SubmitPage() {
         showToast("Upload failed · network error");
       });
   }, [staged, showToast, productId]);
+
+  const handleToggleExpand = useCallback((id: string) => {
+    if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
+    setExpandedId((prev) => (prev === id ? null : id));
+  }, []);
+
+  const handleDetailComplete = useCallback(() => {
+    if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
+    collapseTimerRef.current = setTimeout(() => setExpandedId(null), 5000);
+  }, []);
 
   const validCount = staged.filter((s) => s.valid).length;
   const totalCount = staged.length;
@@ -309,7 +325,14 @@ export default function SubmitPage() {
           </div>
         </section>
 
-        <SubmissionQueue submissions={submissions} freshIds={freshIds} loading={queueLoading} />
+        <SubmissionQueue
+          submissions={submissions}
+          freshIds={freshIds}
+          loading={queueLoading}
+          expandedId={expandedId}
+          onToggleExpand={handleToggleExpand}
+          onDetailComplete={handleDetailComplete}
+        />
       </div>
 
       <div className={`toast ${toast ? "is-visible" : ""}`} role="status" aria-live="polite">

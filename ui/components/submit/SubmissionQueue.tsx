@@ -2,19 +2,30 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowIcon, CalendarBlankIcon } from "../Icon";
+import { ArrowIcon, CalendarBlankIcon, ChevronIcon } from "../Icon";
 import { fmtBytes, isAccepted, relativeTime, type Submission } from "@/lib/submit-types";
+import { PoDetailPanel } from "./PoDetailPanel";
 
 interface SubmissionQueueProps {
   submissions: Submission[];
   freshIds: Set<string>;
   loading?: boolean;
+  expandedId: string | null;
+  onToggleExpand: (id: string) => void;
+  onDetailComplete: () => void;
 }
 
-export function SubmissionQueue({ submissions, freshIds, loading = false }: SubmissionQueueProps) {
-  const total = submissions.length;
+export function SubmissionQueue({
+  submissions,
+  freshIds,
+  loading = false,
+  expandedId,
+  onToggleExpand,
+  onDetailComplete,
+}: SubmissionQueueProps) {
+  const total      = submissions.length;
   const inProgress = submissions.filter((s) => s.status === "in-progress").length;
-  const completed = submissions.filter((s) => s.status === "completed").length;
+  const completed  = submissions.filter((s) => s.status === "completed").length;
 
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -64,46 +75,82 @@ export function SubmissionQueue({ submissions, freshIds, loading = false }: Subm
           </thead>
           <tbody>
             {submissions.map((row) => {
-              const iconKind = isAccepted(row.ext) ? row.ext : "unknown";
-              const isDone = row.status === "completed";
-              const isFailed = row.status === "failed";
+              const iconKind  = isAccepted(row.ext) ? row.ext : "unknown";
+              const isDone    = row.status === "completed";
+              const isFailed  = row.status === "failed";
+              const isExpanded = expandedId === row.id;
+              const trackingCode = row.poId ?? row.id;
+
               return (
-                <tr key={row.id} className={freshIds.has(row.id) ? "is-new" : ""}>
-                  <td>
-                    <span className="queue-id">{row.id}</span>
-                  </td>
-                  <td>
-                    <div className="queue-name">
-                      <div className={`file-icon file-icon--${iconKind}`}>
-                        {row.ext.toUpperCase()}
+                <>
+                  <tr
+                    key={row.id}
+                    className={[
+                      freshIds.has(row.id) ? "is-new" : "",
+                      "queue-row--expandable",
+                    ].join(" ")}
+                    onClick={(e) => {
+                      const target = e.target as HTMLElement;
+                      if (target.closest(".col-action")) return;
+                      onToggleExpand(row.id);
+                    }}
+                  >
+                    <td>
+                      <div className="queue-id-cell">
+                        <span className="queue-toggle" aria-expanded={isExpanded}>
+                          <ChevronIcon
+                            size={12}
+                            style={{ transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.18s" }}
+                          />
+                        </span>
+                        <span className="queue-id">{row.id}</span>
                       </div>
-                      <div className="queue-name__text">
-                        <div className="queue-name__primary" title={row.name}>
-                          {row.name}
+                    </td>
+                    <td>
+                      <div className="queue-name">
+                        <div className={`file-icon file-icon--${iconKind}`}>
+                          {row.ext.toUpperCase()}
                         </div>
-                        <div className="queue-name__sub">
-                          {fmtBytes(row.size)} · submitted {relativeTime(row.submittedAt)}
+                        <div className="queue-name__text">
+                          <div className="queue-name__primary" title={row.name}>
+                            {row.name}
+                          </div>
+                          <div className="queue-name__sub">
+                            {fmtBytes(row.size)} · submitted {relativeTime(row.submittedAt)}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="col-status">
-                    <span className={`qstatus ${isDone ? "qstatus--completed" : isFailed ? "qstatus--failed" : "qstatus--inprogress"}`}>
-                      <span className="qstatus__dot" />
-                      {isDone ? "Completed" : isFailed ? "Failed" : "In progress"}
-                    </span>
-                  </td>
-                  <td className="col-action">
-                    <Link
-                      href={`/po/${encodeURIComponent(row.id)}`}
-                      className="queue-view-btn"
-                      title="View PO detail"
-                    >
-                      {row.status === "in-progress" ? "Track" : "View PO"}
-                      <ArrowIcon size={12} />
-                    </Link>
-                  </td>
-                </tr>
+                    </td>
+                    <td className="col-status">
+                      <span className={`qstatus ${isDone ? "qstatus--completed" : isFailed ? "qstatus--failed" : "qstatus--inprogress"}`}>
+                        <span className="qstatus__dot" />
+                        {isDone ? "Completed" : isFailed ? "Failed" : "In progress"}
+                      </span>
+                    </td>
+                    <td className="col-action">
+                      <Link
+                        href={`/po/${encodeURIComponent(trackingCode)}`}
+                        className="queue-view-btn"
+                        title="View full PO detail"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {row.status === "in-progress" ? "Track" : "View PO"}
+                        <ArrowIcon size={12} />
+                      </Link>
+                    </td>
+                  </tr>
+
+                  {isExpanded && (
+                    <tr key={`${row.id}-detail`} className="queue-detail-row">
+                      <td colSpan={4}>
+                        <PoDetailPanel
+                          trackingCode={trackingCode}
+                          onComplete={onDetailComplete}
+                        />
+                      </td>
+                    </tr>
+                  )}
+                </>
               );
             })}
           </tbody>
