@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowIcon, CalendarBlankIcon, ChevronIcon } from "../Icon";
 import { fmtBytes, isAccepted, relativeTime, type Submission } from "@/lib/submit-types";
@@ -84,9 +84,8 @@ export function SubmissionQueue({
               const trackingCode = row.poId ?? row.id;
 
               return (
-                <>
+                <React.Fragment key={row.id}>
                   <tr
-                    key={row.id}
                     className={[
                       freshIds.has(row.id) ? "is-new" : "",
                       "queue-row--expandable",
@@ -143,7 +142,7 @@ export function SubmissionQueue({
                   </tr>
 
                   {isExpanded && (
-                    <tr key={`${row.id}-detail`} className="queue-detail-row">
+                    <tr className="queue-detail-row">
                       <td colSpan={4}>
                         <PoDetailPanel
                           trackingCode={trackingCode}
@@ -153,7 +152,7 @@ export function SubmissionQueue({
                       </td>
                     </tr>
                   )}
-                </>
+                </React.Fragment>
               );
             })}
           </tbody>
