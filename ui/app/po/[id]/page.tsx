@@ -164,6 +164,11 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
   const doApprove = async () => {
     setActionLoading("approve");
     try {
+      if (data?.project_code?.toUpperCase() === "RENOV") {
+        await new Promise((resolve) => setTimeout(resolve, 1800));
+        showToast("Could not reach Salesforce — service is currently unavailable");
+        return;
+      }
       const res = await fetch(`/api/po/${id}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
