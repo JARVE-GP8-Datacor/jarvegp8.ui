@@ -4,6 +4,7 @@ import { use, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { CheckIcon, AlertCircleIcon } from "@/components/Icon";
+import { ProjectSpecificSection } from "@/components/po/ProjectSpecificSection";
 import type { CategoryId } from "@/lib/types";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -397,23 +398,11 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
           </div>
 
           {/* Project-specific */}
-          {Object.keys(editedPayload.project_specific).length > 0 && (
-            <div className="card">
-              <header className="card__header">
-                <h2 className="card__title">Project Info</h2>
-              </header>
-              <div className="pod-field-grid">
-                {Object.entries(editedPayload.project_specific).map(([k, v]) => (
-                  <PodField
-                    key={k}
-                    label={k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
-                    value={String(v)}
-                    onChange={(val) => setProjectField(k, val)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+          <ProjectSpecificSection
+            projectCode={data.project_code}
+            projectSpecific={editedPayload.project_specific}
+            onChange={setProjectField}
+          />
         </>
       )}
 
