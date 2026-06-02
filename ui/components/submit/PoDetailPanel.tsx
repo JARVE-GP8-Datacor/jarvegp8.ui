@@ -40,6 +40,31 @@ const STEP_DEFS = [
 ] as const;
 
 const POLLING_STATUSES = new Set<PoStatus>(["RECEIVED", "INTERPRETING"]);
+const EVALUATE_QUALITY_IDX = STEP_DEFS.findIndex((s) => s.tool === "evaluate_quality");
+
+function simplifyError(raw: string | null): string {
+  if (!raw) return "An error occurred during processing.";
+  // Strip markdown code blocks and JSON objects
+  const stripped = raw
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/\{[\s\S]*?\}/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const lower = stripped.toLowerCase();
+  if (lower.includes("not a purchase order") || lower.includes("document_is_po")) {
+    return "The document is not a purchase order.";
+  }
+  if (lower.includes("could not be interpreted") || lower.includes("could not interpret")) {
+    return "Unable to read the document as a purchase order.";
+  }
+  if (lower.includes("missing") && lower.includes("required")) {
+    return "Required purchase order fields are missing.";
+  }
+  const clean = stripped.replace(/^the document could not be interpreted as a purchase order[:\s]*/i, "").trim();
+  if (clean.length > 0 && clean.length <= 120) return clean;
+  if (clean.length > 120) return clean.slice(0, 120) + "…";
+  return "An error occurred during processing. Please try with a valid PO document.";
+}
 
 function confMod(score: number): string {
   if (score >= 0.85) return "pod-conf--green";
@@ -123,10 +148,10 @@ export function PoDetailPanel({ trackingCode, onComplete, onFailed }: PoDetailPa
         <ol className="agent-tl agent-tl--compact">
           {STEP_DEFS.map((step, idx) => {
             const ev      = eventMap.get(step.tool);
-            const failed  = isFailed && idx === lastStepIdx;
+            const failed  = isFailed && idx === EVALUATE_QUALITY_IDX;
             const done    = !!ev && !failed && (!isPolling || idx < lastStepIdx);
             const active  = isPolling && idx === lastStepIdx && !!ev;
-            const pending = !ev;
+            const pending = !ev && !failed;
             return (
               <li
                 key={step.tool}
@@ -146,9 +171,9 @@ export function PoDetailPanel({ trackingCode, onComplete, onFailed }: PoDetailPa
                 </div>
                 <div className="agent-step__body">
                   <div className="agent-step__label">{step.label}</div>
-                  {ev && <div className="agent-step__summary">{ev.summary}</div>}
-                  {failed && data?.error_message && (
-                    <div className="agent-step__error">{data.error_message}</div>
+                  {ev && !failed && <div className="agent-step__summary">{ev.summary}</div>}
+                  {failed && (
+                    <div className="agent-step__error">{simplifyError(data?.error_message ?? null)}</div>
                   )}
                 </div>
               </li>
