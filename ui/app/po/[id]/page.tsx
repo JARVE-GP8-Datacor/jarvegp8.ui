@@ -105,7 +105,6 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
   const [data,         setData]         = useState<PoStatusData | null>(null);
   const [fetchError,   setFetchError]   = useState<string | null>(null);
   const [loading,      setLoading]      = useState(true);
-  const [copied,       setCopied]       = useState(false);
   const [actionLoading, setActionLoading] = useState<"approve" | "reprocess" | "update" | null>(null);
   const [toast,        setToast]        = useState("");
   const [editedPayload, setEditedPayload] = useState<PoPayload | null>(null);
@@ -152,14 +151,6 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data?.payload]);
-
-  const copyTracking = () => {
-    if (!data) return;
-    navigator.clipboard.writeText(data.tracking_code).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
 
   const doApprove = async () => {
     setActionLoading("approve");
@@ -275,10 +266,6 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
         <div className="pod-head__left">
           <div className="pod-head__title-row">
             <h1 className="pod-head__tracking">{data.tracking_code}</h1>
-            <button className={`pod-copy ${copied ? "is-copied" : ""}`} onClick={copyTracking} title="Copy tracking code">
-              {copied ? <CheckIcon size={12} /> : <CopyIcon size={12} />}
-              {copied ? "Copied" : "Copy"}
-            </button>
             <span className="pod-project-tag">{data.project_code}</span>
           </div>
           <div className="pod-head__sub">
@@ -463,15 +450,6 @@ function PartyCard({ title, party, onChange }: {
       <input className="pod-field__input pod-party__input" value={party.tax_id ?? ""}        onChange={(e) => onChange("tax_id",        e.target.value)} placeholder="Tax ID" />
       <input className="pod-field__input pod-party__input" value={party.contact_email ?? ""} onChange={(e) => onChange("contact_email", e.target.value)} placeholder="Contact email" />
     </div>
-  );
-}
-
-function CopyIcon({ size = 14 }: { size?: number }) {
-  return (
-    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-      <rect x="9" y="9" width="13" height="13" rx="2" />
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-    </svg>
   );
 }
 
