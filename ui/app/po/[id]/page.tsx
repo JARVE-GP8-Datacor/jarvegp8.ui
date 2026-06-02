@@ -264,6 +264,9 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
           </div>
         </div>
         <div className="pod-head__actions">
+          <Link href={`/orders/${encodeURIComponent(data.tracking_code)}`} className="btn-ghost">
+            Track PO
+          </Link>
           {editedPayload && (
             <button
               className={`btn-ghost ${isDirty ? "btn-ghost--highlight" : ""}`}
