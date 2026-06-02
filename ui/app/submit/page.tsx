@@ -32,6 +32,10 @@ function mapApiSubmission(r: Record<string, unknown>): Submission {
       ? "failed"
       : "completed"; // PENDING_REVIEW and anything else = processed/completed
   const poId = String(r.tracking_code ?? r.po_id ?? r._id ?? r.id ?? "");
+  const payload = r.normalized_payload as Record<string, unknown> | undefined;
+  const notes = Array.isArray(payload?.interpretation_notes)
+    ? (payload.interpretation_notes as string[]).filter(Boolean)
+    : undefined;
   return {
     id: poId || uid(),
     poId: poId || undefined,
@@ -44,6 +48,7 @@ function mapApiSubmission(r: Record<string, unknown>): Submission {
       : r.timestamp
       ? Number(r.timestamp) * 1000
       : Date.now(),
+    notes: notes?.length ? notes : undefined,
   };
 }
 
