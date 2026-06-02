@@ -243,7 +243,7 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
 
       {/* Breadcrumb */}
       <nav className="crumbs" aria-label="Breadcrumb">
-        <Link href="/submit">Submit POs</Link>
+        <Link href={`/submit?project_code=${data.project_code.toLowerCase()}`}>Submit POs</Link>
         <span className="crumbs__sep">/</span>
         <span className="crumbs__current">{data.tracking_code}</span>
       </nav>
