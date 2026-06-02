@@ -375,6 +375,24 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
             </div>
           </div>
 
+          {/* Interpretation notes */}
+          {editedPayload.interpretation_notes && editedPayload.interpretation_notes.length > 0 && (
+            <div className="card">
+              <header className="card__header">
+                <h2 className="card__title">Interpretation Notes</h2>
+                <span className="card__count">{editedPayload.interpretation_notes.length}</span>
+              </header>
+              <ul className="pod-notes">
+                {editedPayload.interpretation_notes.map((note, i) => (
+                  <li key={i} className="pod-note">
+                    <AlertCircleIcon size={13} />
+                    <span>{note}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* Project-specific */}
           <ProjectSpecificSection
             projectCode={data.project_code}

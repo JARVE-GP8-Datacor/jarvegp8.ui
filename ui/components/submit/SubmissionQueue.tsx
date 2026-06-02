@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertCircleIcon, ArrowIcon, CalendarBlankIcon, ChevronIcon } from "../Icon";
+import { ArrowIcon, CalendarBlankIcon, ChevronIcon } from "../Icon";
 import { fmtBytes, isAccepted, relativeTime, type Submission } from "@/lib/submit-types";
 import { PoDetailPanel } from "./PoDetailPanel";
 
@@ -119,16 +119,6 @@ export function SubmissionQueue({
                           <div className="queue-name__sub">
                             {fmtBytes(row.size)} · submitted {relativeTime(row.submittedAt)}
                           </div>
-                          {row.notes && row.notes.length > 0 && (
-                            <ul className="queue-notes">
-                              {row.notes.map((note, i) => (
-                                <li key={i} className="queue-note">
-                                  <AlertCircleIcon size={12} />
-                                  <span>{note}</span>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
                         </div>
                       </div>
                     </td>

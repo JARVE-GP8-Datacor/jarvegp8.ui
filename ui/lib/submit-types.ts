@@ -44,7 +44,6 @@ export interface Submission {
   status: SubmissionStatus;
   submittedAt: number;
   poId?: string; // real backend tracking code, set once upload returns it
-  notes?: string[]; // interpretation_notes from normalized_payload
 }
 
 export function isAccepted(ext: string): ext is AcceptedExt {
