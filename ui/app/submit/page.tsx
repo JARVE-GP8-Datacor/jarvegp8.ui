@@ -31,8 +31,10 @@ function mapApiSubmission(r: Record<string, unknown>): Submission {
       : rawStatus === "FAILED" || rawStatus === "ERROR"
       ? "failed"
       : "completed"; // PENDING_REVIEW and anything else = processed/completed
+  const poId = String(r.tracking_code ?? r.po_id ?? r._id ?? r.id ?? "");
   return {
-    id: String(r.tracking_code ?? r._id ?? r.id ?? r.submission_id ?? uid()),
+    id: poId || uid(),
+    poId: poId || undefined,
     name,
     size: Number(r.size ?? r.file_size ?? 0),
     ext: getExt(name) || "pdf",
