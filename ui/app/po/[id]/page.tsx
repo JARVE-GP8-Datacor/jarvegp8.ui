@@ -105,7 +105,7 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
   const [data,         setData]         = useState<PoStatusData | null>(null);
   const [fetchError,   setFetchError]   = useState<string | null>(null);
   const [loading,      setLoading]      = useState(true);
-  const [actionLoading, setActionLoading] = useState<"approve" | "reprocess" | "update" | null>(null);
+  const [actionLoading, setActionLoading] = useState<"approve" | "update" | null>(null);
   const [toast,        setToast]        = useState("");
   const [editedPayload, setEditedPayload] = useState<PoPayload | null>(null);
   const [isDirty,      setIsDirty]      = useState(false);
@@ -169,18 +169,6 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
       showToast("PO submitted to PMM successfully");
       fetchStatus();
     } catch { showToast("Submit failed — please retry"); }
-    finally { setActionLoading(null); }
-  };
-
-  const doReprocess = async () => {
-    setActionLoading("reprocess");
-    try {
-      const res = await fetch(`/api/po/${id}/reprocess`, { method: "POST" });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      showToast("Reprocessing started");
-      if (!pollInterval.current) pollInterval.current = setInterval(fetchStatus, 2000);
-      fetchStatus();
-    } catch { showToast("Reprocess failed — please retry"); }
     finally { setActionLoading(null); }
   };
 
@@ -249,7 +237,6 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
 
   const isPolling  = POLLING_STATUSES.has(data.status);
   const canSubmit  = (["AUTO_APPROVED", "PENDING_REVIEW", "REVIEWING"] as PoStatus[]).includes(data.status);
-  const canReprocess = (["FAILED", "PENDING_REVIEW"] as PoStatus[]).includes(data.status);
 
   return (
     <Shell>
@@ -277,12 +264,6 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
           </div>
         </div>
         <div className="pod-head__actions">
-          {canReprocess && (
-            <button className="btn-ghost" onClick={doReprocess} disabled={actionLoading !== null}>
-              <RefreshIcon size={13} className={actionLoading === "reprocess" ? "spin" : ""} />
-              Reprocess
-            </button>
-          )}
           {editedPayload && (
             <button
               className={`btn-ghost ${isDirty ? "btn-ghost--highlight" : ""}`}
@@ -450,17 +431,6 @@ function PartyCard({ title, party, onChange }: {
       <input className="pod-field__input pod-party__input" value={party.tax_id ?? ""}        onChange={(e) => onChange("tax_id",        e.target.value)} placeholder="Tax ID" />
       <input className="pod-field__input pod-party__input" value={party.contact_email ?? ""} onChange={(e) => onChange("contact_email", e.target.value)} placeholder="Contact email" />
     </div>
-  );
-}
-
-function RefreshIcon({ size = 14, className = "" }: { size?: number; className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-      <path d="M21 3v5h-5" />
-      <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-      <path d="M3 21v-5h5" />
-    </svg>
   );
 }
 
