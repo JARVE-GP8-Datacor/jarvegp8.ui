@@ -84,6 +84,7 @@ export function PoDetailPanel({ trackingCode, onComplete, onFailed }: PoDetailPa
   }, [fetchStatus]);
 
   const isPolling = !data || POLLING_STATUSES.has(data.status);
+  const isFailed  = !isPolling && data?.status === "FAILED";
   const eventMap  = new Map(data?.agent_events.map((e) => [e.tool, e]) ?? []);
   const lastStepIdx = (() => {
     for (let i = STEP_DEFS.length - 1; i >= 0; i--) {
@@ -100,13 +101,16 @@ export function PoDetailPanel({ trackingCode, onComplete, onFailed }: PoDetailPa
         <div className="po-detail-panel__heading">
           AI Agent Progress
           {!isPolling && data && data.agent_events.length > 0 && (
-            <span className="pod-done-chip"><CheckIcon size={10} /> Complete</span>
+            isFailed
+              ? <span className="pod-failed-chip"><AlertCircleIcon size={10} /> Failed</span>
+              : <span className="pod-done-chip"><CheckIcon size={10} /> Complete</span>
           )}
         </div>
         <ol className="agent-tl agent-tl--compact">
           {STEP_DEFS.map((step, idx) => {
             const ev      = eventMap.get(step.tool);
-            const done    = !!ev && (!isPolling || idx < lastStepIdx);
+            const failed  = isFailed && idx === lastStepIdx;
+            const done    = !!ev && !failed && (!isPolling || idx < lastStepIdx);
             const active  = isPolling && idx === lastStepIdx && !!ev;
             const pending = !ev;
             return (
@@ -114,19 +118,24 @@ export function PoDetailPanel({ trackingCode, onComplete, onFailed }: PoDetailPa
                 key={step.tool}
                 className={[
                   "agent-step",
+                  failed  ? "agent-step--failed"  : "",
                   done    ? "agent-step--done"    : "",
                   active  ? "agent-step--active"  : "",
                   pending ? "agent-step--pending" : "",
                 ].join(" ")}
               >
                 <div className="agent-step__node">
-                  {done    ? <CheckIcon size={11} />
+                  {failed  ? <AlertCircleIcon size={11} />
+                  : done   ? <CheckIcon size={11} />
                   : active ? <span className="agent-step__spinner" />
                   :          <span className="agent-step__num">{idx + 1}</span>}
                 </div>
                 <div className="agent-step__body">
                   <div className="agent-step__label">{step.label}</div>
                   {ev && <div className="agent-step__summary">{ev.summary}</div>}
+                  {failed && data?.error_message && (
+                    <div className="agent-step__error">{data.error_message}</div>
+                  )}
                 </div>
               </li>
             );
