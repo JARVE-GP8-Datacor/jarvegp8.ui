@@ -1,4 +1,3 @@
-import { DownloadIcon } from "../Icon";
 import type { PoSummary } from "@/lib/po-types";
 
 interface PoPageHeaderProps {
@@ -25,12 +24,6 @@ export function PoPageHeader({ po }: PoPageHeaderProps) {
           <span className="dot">·</span>
           Required by {po.requiredBy}
         </p>
-      </div>
-      <div className="po-head__actions">
-        <button className="btn-ghost" type="button">
-          <DownloadIcon />
-          Download PDF
-        </button>
       </div>
     </header>
   );
