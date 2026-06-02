@@ -58,7 +58,6 @@ export default function SubmitPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const seqRef = useRef(1);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const collapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const completionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const projectCodeRef = useRef<string | null>(null);
 
@@ -112,7 +111,6 @@ export default function SubmitPage() {
   useEffect(() => {
     return () => {
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-      if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
       completionTimersRef.current.forEach((t) => clearTimeout(t));
     };
   }, []);
@@ -241,7 +239,6 @@ export default function SubmitPage() {
   }, [staged, showToast, projectCode]);
 
   const handleToggleExpand = useCallback((id: string) => {
-    if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
     setExpandedId((prev) => (prev === id ? null : id));
   }, []);
 
@@ -249,8 +246,6 @@ export default function SubmitPage() {
     setSubmissions((prev) =>
       prev.map((s) => (s.id === id ? { ...s, status: "completed" } : s))
     );
-    if (collapseTimerRef.current) clearTimeout(collapseTimerRef.current);
-    collapseTimerRef.current = setTimeout(() => setExpandedId(null), 5000);
   }, []);
 
   const handleDetailFailed = useCallback((id: string) => {
