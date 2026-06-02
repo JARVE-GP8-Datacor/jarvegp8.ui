@@ -47,6 +47,18 @@ function confMod(score: number): string {
   return "pod-conf--red";
 }
 
+function costMod(usd: number): string {
+  if (usd < 0.03) return "pod-tokens__val--green";
+  if (usd < 0.08) return "pod-tokens__val--amber";
+  return "pod-tokens__val--red";
+}
+
+function tokensMod(n: number): string {
+  if (n < 5000)  return "pod-tokens__val--green";
+  if (n < 12000) return "pod-tokens__val--amber";
+  return "pod-tokens__val--red";
+}
+
 // ── Component ──────────────────────────────────────────────────────────────
 
 interface PoDetailPanelProps {
@@ -177,10 +189,20 @@ export function PoDetailPanel({ trackingCode, onComplete, onFailed }: PoDetailPa
           {(data?.tokens_used !== undefined || data?.estimated_cost_usd !== undefined) && (
             <div className="pod-tokens">
               {data.tokens_used !== undefined && (
-                <span>Tokens used: <strong>{data.tokens_used.toLocaleString("en-US")}</strong></span>
+                <span>
+                  Tokens used:{" "}
+                  <strong className={tokensMod(data.tokens_used)}>
+                    {data.tokens_used.toLocaleString("en-US")}
+                  </strong>
+                </span>
               )}
               {data.estimated_cost_usd !== undefined && (
-                <span>Est. cost: <strong>${data.estimated_cost_usd.toFixed(4)}</strong></span>
+                <span>
+                  Est. cost:{" "}
+                  <strong className={costMod(data.estimated_cost_usd)}>
+                    ${data.estimated_cost_usd.toFixed(4)}
+                  </strong>
+                </span>
               )}
             </div>
           )}

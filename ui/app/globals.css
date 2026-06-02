@@ -2352,7 +2352,10 @@ button {
   font-size: 12px;
   color: var(--portal-text-faint);
 }
-.pod-tokens strong { color: var(--portal-text-muted); font-weight: 600; }
+.pod-tokens strong { font-weight: 600; }
+.pod-tokens__val--green { color: #2c7a1f; }
+.pod-tokens__val--amber { color: #d97706; }
+.pod-tokens__val--red   { color: var(--ds-ui-red); }
 
 /* Tabs */
 .pod-tabs {
