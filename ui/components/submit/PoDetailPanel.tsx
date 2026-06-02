@@ -19,6 +19,7 @@ interface AgentEvent {
 interface PoStatusData {
   status: PoStatus;
   confidence_score?: number;
+  tokens_used?: number;
   agent_events: AgentEvent[];
   payload?: {
     confidence_score: number;
@@ -171,6 +172,11 @@ export function PoDetailPanel({ trackingCode, onComplete, onFailed }: PoDetailPa
                 </li>
               ))}
             </ul>
+          )}
+          {data?.tokens_used !== undefined && (
+            <div className="pod-tokens">
+              Tokens used: <strong>{data.tokens_used.toLocaleString("en-US")}</strong>
+            </div>
           )}
         </div>
       )}
