@@ -129,16 +129,27 @@ export function SubmissionQueue({
                       </span>
                     </td>
                     <td className="col-action">
-                      {!isFailed && (
-                        <Link
-                          href={`/po/${encodeURIComponent(trackingCode)}`}
-                          className="queue-view-btn"
-                          title="View full PO detail"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {row.status === "in-progress" ? "Track" : "View PO"}
-                          <ArrowIcon size={12} />
-                        </Link>
+                      {!isFailed && row.poId && (
+                        <div className="queue-action-group" onClick={(e) => e.stopPropagation()}>
+                          {isDone && (
+                            <Link
+                              href={`/po/${encodeURIComponent(trackingCode)}`}
+                              className="queue-view-btn"
+                              title="View full PO detail"
+                            >
+                              View PO
+                              <ArrowIcon size={12} />
+                            </Link>
+                          )}
+                          <Link
+                            href={`/orders/${encodeURIComponent(trackingCode)}`}
+                            className="queue-view-btn"
+                            title="Track PO status"
+                          >
+                            Track PO
+                            <ArrowIcon size={12} />
+                          </Link>
+                        </div>
                       )}
                     </td>
                   </tr>
