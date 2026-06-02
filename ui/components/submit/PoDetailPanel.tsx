@@ -20,6 +20,7 @@ interface PoStatusData {
   status: PoStatus;
   confidence_score?: number;
   tokens_used?: number;
+  estimated_cost_usd?: number;
   agent_events: AgentEvent[];
   payload?: {
     confidence_score: number;
@@ -173,9 +174,14 @@ export function PoDetailPanel({ trackingCode, onComplete, onFailed }: PoDetailPa
               ))}
             </ul>
           )}
-          {data?.tokens_used !== undefined && (
+          {(data?.tokens_used !== undefined || data?.estimated_cost_usd !== undefined) && (
             <div className="pod-tokens">
-              Tokens used: <strong>{data.tokens_used.toLocaleString("en-US")}</strong>
+              {data.tokens_used !== undefined && (
+                <span>Tokens used: <strong>{data.tokens_used.toLocaleString("en-US")}</strong></span>
+              )}
+              {data.estimated_cost_usd !== undefined && (
+                <span>Est. cost: <strong>${data.estimated_cost_usd.toFixed(4)}</strong></span>
+              )}
             </div>
           )}
         </div>
