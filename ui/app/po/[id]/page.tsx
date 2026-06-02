@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Header } from "@/components/Header";
 import { CheckIcon, AlertCircleIcon } from "@/components/Icon";
 import { ProjectSpecificSection } from "@/components/po/ProjectSpecificSection";
-import type { CategoryId } from "@/lib/types";
+import { PRODUCTS } from "@/lib/data";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -253,7 +253,9 @@ export default function PoDetailPage({ params }: { params: Promise<{ id: string 
         <div className="pod-head__left">
           <div className="pod-head__title-row">
             <h1 className="pod-head__tracking">{data.tracking_code}</h1>
-            <span className="pod-project-tag">{data.project_code}</span>
+            <span className="pod-project-tag">
+              {PRODUCTS.find((p) => p.project_code?.toLowerCase() === data.project_code?.toLowerCase())?.name ?? data.project_code}
+            </span>
           </div>
           <div className="pod-head__sub">
             <span className={`pod-badge ${statusMod(data.status)} ${isPolling || data.status === "PUSHING" ? "pod-badge--pulse" : ""}`}>
