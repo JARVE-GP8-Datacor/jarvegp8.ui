@@ -44,26 +44,18 @@ const EVALUATE_QUALITY_IDX = STEP_DEFS.findIndex((s) => s.tool === "evaluate_qua
 
 function simplifyError(raw: string | null): string {
   if (!raw) return "An error occurred during processing.";
-  // Strip markdown code blocks and JSON objects
+  // Strip markdown code blocks and inline JSON objects
   const stripped = raw
     .replace(/```[\s\S]*?```/g, "")
     .replace(/\{[\s\S]*?\}/g, "")
     .replace(/\s+/g, " ")
     .trim();
-  const lower = stripped.toLowerCase();
-  if (lower.includes("not a purchase order") || lower.includes("document_is_po")) {
-    return "The document is not a purchase order.";
-  }
-  if (lower.includes("could not be interpreted") || lower.includes("could not interpret")) {
-    return "Unable to read the document as a purchase order.";
-  }
-  if (lower.includes("missing") && lower.includes("required")) {
-    return "Required purchase order fields are missing.";
-  }
-  const clean = stripped.replace(/^the document could not be interpreted as a purchase order[:\s]*/i, "").trim();
-  if (clean.length > 0 && clean.length <= 120) return clean;
-  if (clean.length > 120) return clean.slice(0, 120) + "…";
-  return "An error occurred during processing. Please try with a valid PO document.";
+  // Remove redundant technical prefix, keep the human-readable explanation
+  const clean = stripped
+    .replace(/^the document could not be interpreted as a purchase order[:\s]*/i, "")
+    .replace(/^therefore,?\s*/i, "")
+    .trim();
+  return clean || "An error occurred during processing. Please try with a valid PO document.";
 }
 
 function confMod(score: number): string {
